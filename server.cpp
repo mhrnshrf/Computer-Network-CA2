@@ -88,17 +88,6 @@ return false;
 return true;
 }
 
-int char_s_to_int(char *char_s)
-{
-    int number = 0;
-    while((*char_s >= '0') && (*char_s <= '9'))
-    {
-        number = (number * 10) + (*char_s - '0');
-        char_s++;
-    }
-    return number;
-}
-
 struct person
 {
     char code[3];

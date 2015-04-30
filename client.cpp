@@ -1,21 +1,28 @@
+#include <stdio.h>
 #include <stdlib.h>
-#include <iostream>
-#include <string>
 #include <unistd.h>
+#include <errno.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netdb.h> 
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <iostream>
 #include "tknlib.h"
-#include <fstream>	
-#include <vector>	
+#define MAX 100	
 
 using namespace std;
 
 
 int main(int argc, char *argv[])
 {
+    int sfd, n, i;
+    socklen_t len;
+    char sline[MAX], rline[MAX+1];
+    struct sockaddr_in saddr;
+ 
+    sfd = socket(AF_INET, SOCK_DGRAM, 0);
     // if (argc < 3) 
     // {
     //     char error[]="ERROR: NOT ENOUGH ARGUMNETS\n";
@@ -46,7 +53,7 @@ while(1)
     bzero(line,2000);
     bzero(tmp,2000);
     bzero(token,20);
-    bzero(usr,20);
+    bzero(usr,20);    
     bzero(pass,20);
     bzero(service,20);
     bzero(access,20);
@@ -79,6 +86,26 @@ while(1)
     		strcpy(port_str, command[i++]);
     		sw_portno = atoi(port_str);
             // TODO
+
+            sfd = socket(AF_INET, SOCK_DGRAM, 0);   
+ 
+            bzero(&saddr, sizeof(saddr));
+            saddr.sin_family = AF_INET;
+            inet_pton(AF_INET, argv[1], &saddr.sin_addr);
+            saddr.sin_port = htons(2910);
+         
+            printf("Client Running\n");
+            while(fgets(sline, MAX, stdin)!=NULL) {
+
+                len=sizeof(saddr);
+                sendto(sfd, sline, strlen(sline), 0, (struct sockaddr *)&saddr, len);
+                n=recvfrom(sfd, rline, MAX, 0, NULL, NULL);
+                rline[n]=0;
+                fputs(rline, stdout);
+            }
+
+
+
     	}
     	else
     	{
