@@ -14,6 +14,31 @@
 
 using namespace std;
 
+int setip()
+{
+    int ip;
+
+
+    return ip;
+}
+
+void encaps(char* type, char* dst, char* src, char* data)
+{
+    char packet[128]; 
+    // bezro(packet,128); 
+    char ttl[] = "0010";
+    char crc[] = "111111";
+    char length[] = "00128";
+    strcpy(packet, type);
+    strcpy(packet, dst);
+    strcpy(packet, src);
+    strcpy(packet, ttl);
+    strcpy(packet, length);
+    strcpy(packet, data);
+    strcpy(packet, crc);
+
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -92,15 +117,19 @@ while(1)
             bzero(&saddr, sizeof(saddr));
             saddr.sin_family = AF_INET;
             inet_pton(AF_INET, argv[1], &saddr.sin_addr);
-            saddr.sin_port = htons(2910);
+            saddr.sin_port = htons(sw_portno);
          
-            printf("Client Running\n");
+            printf("Client running...\n");
             while(fgets(sline, MAX, stdin)!=NULL) {
 
                 len=sizeof(saddr);
+                
                 sendto(sfd, sline, strlen(sline), 0, (struct sockaddr *)&saddr, len);
+                
                 n=recvfrom(sfd, rline, MAX, 0, NULL, NULL);
+                
                 rline[n]=0;
+                
                 fputs(rline, stdout);
             }
 

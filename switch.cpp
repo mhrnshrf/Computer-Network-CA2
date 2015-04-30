@@ -23,13 +23,13 @@ int main()
  
     bind(sfd, (struct sockaddr *)&saddr, sizeof(saddr));
  
-    printf("Server running\n");
-    for(;;) {
+    printf("Switch running...\n");
+    // for(;;) {
         len=sizeof(caddr);
         n=recvfrom(sfd, line, 128, 0, (struct sockaddr *)&caddr, &len);
         cout << line << endl;
         sendto(sfd, line, n, 0, (struct sockaddr *)&caddr, len);
-    }
+    // }
  
     return 0;
 }
