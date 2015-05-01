@@ -9,45 +9,43 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <iostream>
+#include <fstream>
 #include "tknlib.h"
-#define MAX 100	
+#define MAX 95 
 
 using namespace std;
 
 int setip()
 {
     int ip;
-
+    char str[4];
+    ifstream in;
+    ofstream out;
+    in.open("/home/me/Desktop/ip");
+    in >> str;
+    in.close();
+    ip = atoi(str);
+    itoa(ip+1, str);    
+    out.open("/home/me/Desktop/ip");
+    out << str;
+    out.close();
 
     return ip;
 }
 
-void encaps(char* type, char* dst, char* src, char* data)
-{
-    char packet[128]; 
-    // bezro(packet,128); 
-    char ttl[] = "0010";
-    char crc[] = "111111";
-    char length[] = "00128";
-    strcpy(packet, type);
-    strcpy(packet, dst);
-    strcpy(packet, src);
-    strcpy(packet, ttl);
-    strcpy(packet, length);
-    strcpy(packet, data);
-    strcpy(packet, crc);
 
-}
 
 
 int main(int argc, char *argv[])
 {
-    int sfd, n, i;
-    socklen_t len;
-    char sline[MAX], rline[MAX+1];
-    struct sockaddr_in saddr;
+
+    // int sfd, n, i, x;
+    // socklen_t len;
+    // char sline[MAX], rline[MAX+1];
+    // struct sockaddr_in saddr;
+    int i,x;
  
-    sfd = socket(AF_INET, SOCK_DGRAM, 0);
+    // sfd = socket(AF_INET, SOCK_DGRAM, 0);
     // if (argc < 3) 
     // {
     //     char error[]="ERROR: NOT ENOUGH ARGUMNETS\n";
@@ -61,9 +59,10 @@ while(1)
 {
 
     char *command[20];
-    char buffer[2000];
-    char line[2000];
-    char tmp[2000];
+    char buf[128];
+    char packet[128];
+    char line[128];
+    char tmp[128];
     char token[20];
     char usr[20];
     char pass[20];
@@ -73,10 +72,11 @@ while(1)
     char port_str[4];
 
 
-    bzero(buffer,2000);
+    bzero(buf,128);
+    bzero(packet,128);
     bzero(command,20);
-    bzero(line,2000);
-    bzero(tmp,2000);
+    bzero(line,128);
+    bzero(tmp,128);
     bzero(token,20);
     bzero(usr,20);    
     bzero(pass,20);
@@ -88,60 +88,69 @@ while(1)
     i = 0;
     int sw_portno;
 
+
     
     read(0, line, sizeof(line));
-	strcpy(tmp, line);
+    strcpy(tmp, line);
     int p = parse(line, command);
 
     strcpy(token, command[i++]);
 
     if (string(token) == "Login")
     {
-    	strcpy(usr , command[i++]);
-    	strcpy(pass , command[i++]);
+        strcpy(usr , command[i++]);
+        strcpy(pass , command[i++]);
         // TODO 
 
     }
     else if (string(token) == "Connect")
     {
-    	strcpy(token, command[i++]);
+        strcpy(token, command[i++]);
 
-    	if(string(token) == "Switch")
-    	{
-    		strcpy(port_str, command[i++]);
-    		sw_portno = atoi(port_str);
+        if(string(token) == "Switch")
+        {
+            strcpy(port_str, command[i++]);
+            sw_portno = atoi(port_str);
+
             // TODO
+            cout << sw_portno << endl;
+            x = setip();
+
+            cout << x << endl;
+
+            int sfd, n;
+            socklen_t len;
+            char sline[MAX], rline[MAX+1];
+            struct sockaddr_in saddr;
 
             sfd = socket(AF_INET, SOCK_DGRAM, 0);   
- 
+         
             bzero(&saddr, sizeof(saddr));
             saddr.sin_family = AF_INET;
             inet_pton(AF_INET, argv[1], &saddr.sin_addr);
-            saddr.sin_port = htons(sw_portno);
+            saddr.sin_port = htons(sw_portno);  
          
             printf("Client running...\n");
             while(fgets(sline, MAX, stdin)!=NULL) {
-
                 len=sizeof(saddr);
-                
-                sendto(sfd, sline, strlen(sline), 0, (struct sockaddr *)&saddr, len);
-                
-                n=recvfrom(sfd, rline, MAX, 0, NULL, NULL);
-                
-                rline[n]=0;
-                
-                fputs(rline, stdout);
+                char dst[] = "0000";
+                char type[] = "rd";
+                encaps(type, dst, port_str, sline, packet);
+                sendto(sfd, packet, strlen(packet), 0, (struct sockaddr *)&saddr, len);
+                bzero(buf,128);
+                n=recvfrom(sfd, buf, 128, 0, NULL, NULL);
+                cout << buf << endl;
             }
 
 
 
-    	}
-    	else
-    	{
-    		cout << "Command not found!" << endl;
-    		exit(1);
-    	}
-    	
+        }
+        else
+        {
+            cout << "Command not found!" << endl;
+            exit(1);
+        }
+        
     }  
     else if (string(token) == "Get")
     {
@@ -181,20 +190,20 @@ while(1)
     else if (string(token) == "Request")
     {
         strcpy(service, command[i++]);
-    	strcpy(access, command[i++]);
+        strcpy(access, command[i++]);
 
-    	// TODO
+        // TODO
 
     }    
     else if (string(token) == "Send")
     {
-    	strcpy(service, command[i++]);
-    	// TODO
+        strcpy(service, command[i++]);
+        // TODO
     }
     else if (string(token) == "Append")
     {
         strcpy(service, command[i++]);
-	 	strcpy(data, command[i++]);
+        strcpy(data, command[i++]);
         // TODO
     }
     else if (string(token) == "Logout")
@@ -202,10 +211,10 @@ while(1)
         // TODO
     }
     else
-	{
-		cout << "Command not found!" << endl;
-		exit(1);
-	}
+    {
+        cout << "Command not found!" << endl;
+        exit(1);
+    }
 
 
 }

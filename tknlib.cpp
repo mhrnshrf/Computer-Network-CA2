@@ -1,5 +1,7 @@
 #include "tknlib.h"
 
+using namespace std;
+
 int  parse(char *line, char **words)
 {
 	 int count = 0;
@@ -63,3 +65,53 @@ int char_s_to_int(char *char_s)
     return number;
 }
 
+void encaps(char* type, char* dst, char* src, char* data, char* packet)
+{
+ 
+    char ttl[] = "0010";
+    char crc[] = "111111";
+    char length[] = "00128";
+    strcpy(packet, type);
+    strcat(packet, dst);
+    strcat(packet, src);
+    strcat(packet, ttl);
+    strcat(packet, length);
+    strcat(packet, data);
+    strcat(packet, crc);
+
+}
+
+int route(char* packet, char *port[], int portcount)
+{
+    char dst[4];
+    char src[4];
+    dst[0] = packet[2];
+    dst[1] = packet[3];
+    dst[2] = packet[4];
+    dst[3] = packet[5];
+    src[0] = packet[10];
+    src[1] = packet[11];
+    src[2] = packet[12];
+    src[3] = packet[13];
+
+    cout << "you are coming from: " << src << endl;
+
+    if (!strcmp(src,port[0]))
+    {
+        cout << "you are going to: " << dst  << " by " << port[0] << endl;
+        return atoi(port[0]);
+    }
+    else
+    {
+        for (int i = 1; i < portcount-1 ; ++i)
+        {
+            if (strcmp(dst,port[i]))
+            {
+                return atoi(port[i]);
+            }
+        }
+        return atoi(port[portcount-1]);
+    }
+
+
+}
