@@ -117,3 +117,21 @@ int route(char* packet, char *port[], int portcount)
 
 }
 
+bool issw(char* packet)
+{
+    if (packet[0] == 's' && packet[1] == 'w')
+    {
+        return true;
+    }
+    return false;
+}
+
+bool iscl(char* packet)
+{
+    if (packet[0] == 'c' && packet[1] == 'l')
+    {
+        return true;
+    }
+    return false;
+}
+

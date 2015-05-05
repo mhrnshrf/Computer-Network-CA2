@@ -5,13 +5,20 @@
 #include <strings.h>
 #include <iostream>
 #include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <map>
 #include <pthread.h>
 #include "tknlib.h"
+#include <map>
+#include <vector>
+
+
 
 using namespace std;
+
+vector<int> sw;
 
 int index(int port, char *argv[])
 {
@@ -24,75 +31,173 @@ int index(int port, char *argv[])
 }
 
 
+void *read_console(void* port)
+{
+
+    int i = 0;
+    int* myport = (int *) port;
+    char *command[20];
+    char line[128];
+    char tmp[128];
+    char token[20];
+    char port_str[4];
+    int sw_portno;
+
+    int sfd;
+    socklen_t len;
+    char buf[128];
+    struct sockaddr_in saddr;
+
+
+
+    read(0, line, sizeof(line));
+    strcpy(tmp, line);
+    int p = parse(line, command);
+    strcpy(token, command[i++]);
+
+    if (string(token) == "Connect")
+    {
+        strcpy(token, command[i++]);
+
+        if(string(token) == "Switch")
+        {
+            strcpy(port_str, command[i++]);
+            sw_portno = atoi(port_str);
+
+            // TODO
+
+            cout <<  "I connect to: " << sw_portno << endl;
+
+            sw.push_back(sw_portno);
+
+            // create socket
+            bzero(&saddr, sizeof(saddr));
+            saddr.sin_family = AF_INET;
+            saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+            saddr.sin_port = htons(sw_portno);
+
+            sfd = socket(AF_INET, SOCK_DGRAM, 0); 
+            if(sfd == -1)
+            {
+                cerr << "Socket creation failed!" << endl;
+                exit(1);
+            }
+
+            // int b = bind(sfd, (struct sockaddr *)&saddr, sizeof(saddr));
+            // if(b == -1)
+            // {
+            //     // cout << *myport << endl;
+            //     cerr << "Port bind failed!" << endl;
+            //     exit(1);
+            // }
+
+            len = sizeof(saddr);
+            bzero(buf, 128);
+            strcpy(buf, "sw");
+            int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
+            if (ns == -1)
+            {
+                cerr << "Send failed!" << endl;
+                exit(1);
+            }
+
+        }
+        else
+        {
+            cout << "Command not found!" << endl;
+            exit(1);
+        }
+
+
+    }
+    else
+    {
+        cout << "Command not found!" << endl;
+        exit(1);
+    }
+
+    pthread_exit(NULL);
+
+}
+
 int main(int argc, char *argv[])
 {
-    struct timeval tv;
-    tv.tv_sec = 1;  // 1 Secs Timeout 
-    tv.tv_usec = 0;  // Not init'ing this can cause strange errors
-    int sfd[10];
+    int sfd;
+    int port;
+    port = atoi(argv[1]);
     socklen_t len;
     char buf[128];
     char dum[128];
-    struct sockaddr_in saddr[10], caddr[10];
-    struct sockaddr_in naddr;
+    struct sockaddr_in saddr, caddr;
+
+    pthread_t th;
+    int rc;
+    for (int i = 0; i < 10; ++i)
+    {
+        rc = pthread_create(&th, NULL, &read_console, (void*)&port);
+    }
+
 
     // create socket
-    for (int i = 0; i < argc-1; ++i)
+    sfd = socket(AF_INET, SOCK_DGRAM, 0); 
+    if(sfd == -1)
     {
-        sfd[i] = socket(AF_INET, SOCK_DGRAM, 0); 
-        if(sfd[i] == -1)
-        {
-            cerr << "Socket creation failed!" << endl;
-            exit(1);
-        }
-        bzero(&saddr[i], sizeof(saddr[i]));
-        saddr[i].sin_family = AF_INET;
-        saddr[i].sin_addr.s_addr = htonl(INADDR_ANY);
-        saddr[i].sin_port = htons(atoi(argv[i+1]));
-        cout << i << " sin_port: " << saddr[i].sin_port << endl;
-     
-        int b = bind(sfd[i], (struct sockaddr *)&saddr[i], sizeof(saddr[i]));
-        if(b == -1)
-        {
-            cerr << "Port bind failed!" << endl;
-            exit(1);
-        }
-
-        setsockopt(sfd[i], SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval));
+        cerr << "Socket creation failed!" << endl;
+        exit(1);
     }
+
+    bzero(&saddr, sizeof(saddr));
+    saddr.sin_family = AF_INET;
+    saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    saddr.sin_port = htons(atoi(argv[1]));
  
-    // receive, route & send packet
-    for(int i = 0; i < argc-1; i++){
-
-    len=sizeof(caddr[i]);
-    bzero(buf,128);
-
-    int nr = recvfrom(sfd[i], buf, 128, 0, (struct sockaddr *)&caddr[i], &len);
-
-        // cout << i <<" cadder: " << caddr[i].sin_port << endl;
-    
-
-    if (nr != -1)
+    int b = bind(sfd, (struct sockaddr *)&saddr, sizeof(saddr));
+    if(b == -1)
     {
-        int r = route(buf, argv, argc -1);
-        int dst = index(r, argv);
-
-
-        int ns = sendto(sfd[i], buf, nr, 0, (struct sockaddr *)&caddr[i], len);
-        if (ns == -1)
-        {
-            cerr << "Send failed!" << endl;
-            exit(1);
-        }
+        cerr << "Port bind failed!" << endl;
+        exit(1);
     }
-    
-   
-    // cout << "Timeout!\n";
-    // close(sfd);
 
-    if (i == argc-2)
-        i = -1;
-    
+    // receive, route & send packet
+    while(1)
+    {
+
+        len=sizeof(caddr);
+        bzero(buf,128);
+
+        int nr = recvfrom(sfd, buf, 128, 0, (struct sockaddr *)&caddr, &len);
+
+            // cout << i <<" cadder: " << caddr[i].sin_port << endl;
+
+        
+        
+
+        if (nr != -1)
+        {
+            cout << "Received packet from " << inet_ntoa(caddr.sin_addr)<<  ":" << ntohs(caddr.sin_port) << endl;
+            
+            if (issw(buf))
+            {
+                sw.push_back(caddr.sin_port);
+                cout << "connected to me: " << caddr.sin_port << endl;
+            }
+            else if (iscl(buf))
+            {
+                // TODO 
+            }
+
+            int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
+            if (ns == -1)
+            {
+                cerr << "Send failed!" << endl;
+                exit(1);
+            }
+        }
+        
+       
+        // cout << "Timeout!\n";
+        // close(sfd);
+
 
     }
  

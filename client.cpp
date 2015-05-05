@@ -62,8 +62,8 @@ while(1)
     char *command[20];
     char buf[128];
     char packet[128];
-    char line[128];
     char tmp[128];
+    char line[128];
     char token[20];
     char usr[20];
     char pass[20];
