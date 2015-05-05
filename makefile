@@ -4,7 +4,7 @@ server:server.cpp tknlib.o
 client:client.cpp tknlib.o
 	g++ client.cpp tknlib.o -o client
 switch:switch.cpp tknlib.o
-	g++ switch.cpp tknlib.o -o switch
+	g++ -pthread switch.cpp tknlib.o -o switch
 tknlib.o:tknlib.h tknlib.cpp
 	g++ -c tknlib.cpp
 Clean:

@@ -94,12 +94,13 @@ int route(char* packet, char *port[], int portcount)
     src[2] = packet[12];
     src[3] = packet[13];
 
-    cout << "you are coming from: " << src << endl;
+    // cout << "you are coming from: " << atoi(src)  < <endl;
+    // cout << "port[0] " << port[]  << endl;
 
-    if (!strcmp(src,port[0]))
+    if (atoi(src) != atoi(port[1]))
     {
-        cout << "you are going to: " << dst  << " by " << port[0] << endl;
-        return atoi(port[0]);
+        // cout << "you are going to: " << atoi(dst)  << " by " << port[1] << endl;
+        return atoi(port[1]);
     }
     else
     {
@@ -115,3 +116,4 @@ int route(char* packet, char *port[], int portcount)
 
 
 }
+

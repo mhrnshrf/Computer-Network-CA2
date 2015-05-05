@@ -12,6 +12,7 @@
 #include <fstream>
 #include "tknlib.h"
 #define MAX 95 
+#define DEST "00000000" 
 
 using namespace std;
 
@@ -133,8 +134,9 @@ while(1)
             printf("Client running...\n");
             while(fgets(sline, MAX, stdin)!=NULL) {
                 len=sizeof(saddr);
-                char dst[] = "0000";
+                char dst[] = "00000000";
                 char type[] = "rd";
+                strcat(port_str, "0000");
                 encaps(type, dst, port_str, sline, packet);
                 sendto(sfd, packet, strlen(packet), 0, (struct sockaddr *)&saddr, len);
                 bzero(buf,128);
