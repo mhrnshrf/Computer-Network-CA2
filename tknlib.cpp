@@ -2,6 +2,20 @@
 
 using namespace std;
 
+using namespace std;
+void padding(char*  in, int len, char* out){
+char tmp[]="0"; 
+strcpy(out,in);
+
+    while(strlen(out)<len){
+        strcat(tmp,out);
+        strcpy(out,tmp);
+        strcpy(tmp,"0");
+    }
+
+
+
+}
 
 
 int  parse(char *line, char **words)
@@ -67,20 +81,19 @@ int char_s_to_int(char *char_s)
     return number;
 }
 
-void encaps(char* type, char* cmd, char* dst, char* src, char* data, char* packet)
+void encaps(char* type, char* dst, char* src, char* data, char* packet)
 {
  
-    char ttl[] = "99";
+    char ttl[] = "0010";
     char crc[] = "111111";
     char length[] = "00128";
     strcpy(packet, type);
-    strcat(packet, cmd);
     strcat(packet, dst);
     strcat(packet, src);
     strcat(packet, ttl);
     strcat(packet, length);
     strcat(packet, data);
-    // strcat(packet, crc);
+    strcat(packet, crc);
 
 }
 
@@ -137,16 +150,8 @@ bool iscl(char* packet)
     }
     return false;
 }
-bool issr(char* packet)
-{
-    if (packet[0] == 's' && packet[1] == 'r')
-    {
-        return true;
-    }
-    return false;
-}
 
-bool isfirst(char* packet)
+bool connect_req(char* packet)
 {
     if (packet[2] == 'c' && packet[3] == 't')
     {
@@ -154,5 +159,4 @@ bool isfirst(char* packet)
     }
     return false;
 }
-
 
