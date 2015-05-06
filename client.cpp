@@ -37,8 +37,113 @@ int setip()
 
 
 
+
+
+
+
+
+
+
+ void* read_console(void*){
+    int i=0;
+
+char line [500];
+
+char usr[20];
+char pass[20];
+char token [20];
+char port_no[10];
+char service[100];
+char file[100];
+char access_type[10];
+char data[1000];
+char * command[20];
+bzero(line,500);
+bzero(usr,20);
+bzero(pass,20);
+bzero(token,20);
+bzero(service,100);
+bzero(access_type,10);
+bzero(file,100);
+bzero(data,1000);
+bzero(port_no,10);
+  read(0, line, sizeof(line));
+    parse(line, command);
+    strcpy(token, command[i++]);
+        if (string(token) == "Login")
+    {
+        strcpy(usr, command[i++]);
+        strcpy(pass, command[i++]);
+        //to do:
+        // fill the rout table and find shortest path
+
+
+
+ }
+ else if(string(token)=="Connect"){
+    strcpy(token, command[i++]);
+    if(string(token)=="Switch"){
+        strcpy(port_no, command[i++]);
+        // to do:
+        // connect to special switch
+        //set ip
+
+    }
+    else{
+        cout<<"command not found!"<<endl;
+        exit(1);
+    }
+
+ }
+ else if(string(token)=="Get"){
+
+
+ }
+ else if(string(token)=="Request"){
+    strcpy(service, command[i++]);
+     strcpy(access_type, command[i++]);
+ }
+
+ else if(string(token)=="Send"){
+    strcpy(file, command[i++]);
+   
+ }
+
+ else if(string(token)=="Append"){
+    strcpy(file, command[i++]);
+    strcpy(data, command[i++]);
+   
+ }
+
+
+ else if(string(token)=="Logout"){
+   
+ }
+ else {
+    cout<<"Command not found"<<endl;
+ }
+
+}
+
+
+
+
+
+
+
+
+
+
 int main(int argc, char *argv[])
 {
+
+        pthread_t th;
+    int rc;
+    for (int i = 0; i < 100; ++i)
+    {
+        rc = pthread_create(&th, NULL, &read_console, (void*)NULL);
+    }
+ 
 
     // int sfd, n, i, x;
     // socklen_t len;
