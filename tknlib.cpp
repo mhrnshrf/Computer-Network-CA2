@@ -135,3 +135,12 @@ bool iscl(char* packet)
     return false;
 }
 
+bool connect_req(char* packet)
+{
+    if (packet[2] == 'c' && packet[3] == 't')
+    {
+        return true;
+    }
+    return false;
+}
+

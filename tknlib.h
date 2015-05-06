@@ -19,4 +19,5 @@ extern void encaps(char* type, char* dst, char* src, char* data, char* packet);
 extern int route(char* packet, char *port[], int portcount);
 extern bool issw(char* packet);
 extern bool iscl(char* packet);
+extern bool connect_req(char* packet);
 #endif

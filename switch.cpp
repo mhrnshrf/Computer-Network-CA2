@@ -83,23 +83,17 @@ void *read_console(void* port)
                 exit(1);
             }
 
-            // int b = bind(sfd, (struct sockaddr *)&saddr, sizeof(saddr));
-            // if(b == -1)
-            // {
-            //     // cout << *myport << endl;
-            //     cerr << "Port bind failed!" << endl;
-            //     exit(1);
-            // }
-
             len = sizeof(saddr);
             bzero(buf, 128);
             strcpy(buf, "sw");
+            strcpy(buf, "ct");
             int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
             if (ns == -1)
             {
                 cerr << "Send failed!" << endl;
                 exit(1);
             }
+            sw.push_back(sw_portno);
 
         }
         else
@@ -169,8 +163,6 @@ int main(int argc, char *argv[])
 
             // cout << i <<" cadder: " << caddr[i].sin_port << endl;
 
-        
-        
 
         if (nr != -1)
         {
@@ -178,8 +170,12 @@ int main(int argc, char *argv[])
             
             if (issw(buf))
             {
-                sw.push_back(caddr.sin_port);
-                cout << "connected to me: " << caddr.sin_port << endl;
+                if (connect_req(buf))
+                {
+                    sw.push_back(caddr.sin_port);
+                    
+                    cout << "connected to me: " << caddr.sin_port << endl;
+                }
             }
             else if (iscl(buf))
             {
