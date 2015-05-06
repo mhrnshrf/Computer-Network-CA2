@@ -19,6 +19,9 @@
 using namespace std;
 
 vector<int> sw;
+vector<int> cl;
+vector<int> ip;
+int server;
 
 int index(int port, char *argv[])
 {
@@ -170,7 +173,7 @@ int main(int argc, char *argv[])
             
             if (issw(buf))
             {
-                if (connect_req(buf))
+                if (isfirst(buf))
                 {
                     sw.push_back(caddr.sin_port);
                     
@@ -180,14 +183,45 @@ int main(int argc, char *argv[])
             else if (iscl(buf))
             {
                 // TODO 
+                if (isfirst(buf))
+                {
+                    // TODO dec ttl
+                    // for (int i = 0; i < sw.size(); ++i)
+                    // {
+                    //     caddr.sin_port = sw[i];
+                    //     int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&caddr, len);
+                    //     if (ns == -1)
+                    //     {
+                    //         cerr << "Send failed!" << endl;
+                    //         exit(1);
+                    //     } 
+                    // }
+
+                    cl.push_back(caddr.sin_port);
+                    ip.push_back(getip(buf));
+                    
+                    caddr.sin_port = server;
+                    int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
+                    if (ns == -1)
+                    {
+                        cerr << "Send failed!" << endl;
+                        exit(1);
+                    }
+                }
+            }            
+            else if (issr(buf))
+            {
+                // TODO 
+                if (isfirst(buf))
+                {
+                    server = caddr.sin_port;
+
+                }
+
+
+
             }
 
-            int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
-            if (ns == -1)
-            {
-                cerr << "Send failed!" << endl;
-                exit(1);
-            }
         }
         
        

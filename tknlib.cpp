@@ -65,19 +65,20 @@ int char_s_to_int(char *char_s)
     return number;
 }
 
-void encaps(char* type, char* dst, char* src, char* data, char* packet)
+void encaps(char* type, char* cmd, char* dst, char* src, char* data, char* packet)
 {
  
-    char ttl[] = "0010";
+    char ttl[] = "99";
     char crc[] = "111111";
     char length[] = "00128";
     strcpy(packet, type);
+    strcat(packet, cmd);
     strcat(packet, dst);
     strcat(packet, src);
     strcat(packet, ttl);
     strcat(packet, length);
     strcat(packet, data);
-    strcat(packet, crc);
+    // strcat(packet, crc);
 
 }
 
@@ -134,8 +135,16 @@ bool iscl(char* packet)
     }
     return false;
 }
+bool issr(char* packet)
+{
+    if (packet[0] == 's' && packet[1] == 'r')
+    {
+        return true;
+    }
+    return false;
+}
 
-bool connect_req(char* packet)
+bool isfirst(char* packet)
 {
     if (packet[2] == 'c' && packet[3] == 't')
     {
@@ -143,4 +152,5 @@ bool connect_req(char* packet)
     }
     return false;
 }
+
 
