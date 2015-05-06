@@ -10,7 +10,7 @@
 #include <map>
 
 using namespace std;
-
+extern void padding(char*  in, int len, char* out);
 extern int  parse(char *line, char **words);
 extern int length(char* s);
 extern void itoa(int i,char* characters);
