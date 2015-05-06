@@ -67,7 +67,8 @@ bzero(access_type,10);
 bzero(file,100);
 bzero(data,1000);
 bzero(port_no,10);
-  read(0, line, sizeof(line));
+
+    read(0, line, sizeof(line));
     parse(line, command);
     strcpy(token, command[i++]);
         if (string(token) == "Login")
@@ -137,12 +138,12 @@ bzero(port_no,10);
 int main(int argc, char *argv[])
 {
 
-        pthread_t th;
-    int rc;
-    for (int i = 0; i < 100; ++i)
-    {
-        rc = pthread_create(&th, NULL, &read_console, (void*)NULL);
-    }
+    //     pthread_t th;
+    // int rc;
+    // for (int i = 0; i < 100; ++i)
+    // {
+    //     rc = pthread_create(&th, NULL, &read_console, (void*)NULL);
+    // }
  
 
     // int sfd, n, i, x;
@@ -237,17 +238,33 @@ while(1)
             saddr.sin_port = htons(sw_portno);  
          
             printf("Client running...\n");
-            while(fgets(sline, MAX, stdin)!=NULL) {
-                len=sizeof(saddr);
-                char dst[] = "00000000";
-                char type[] = "rd";
-                strcat(port_str, "0000");
-                encaps(type, dst, port_str, sline, packet);
-                sendto(sfd, packet, strlen(packet), 0, (struct sockaddr *)&saddr, len);
-                bzero(buf,128);
-                n=recvfrom(sfd, buf, 128, 0, NULL, NULL);
-                cout << buf << endl;
-            }
+
+            len=sizeof(saddr);
+            char dst[] = "0000";
+            char type[] = "cl";
+            char cmd[] = "ct"; 
+            char* src;
+            // TODO padding port_str
+            itoa(x, src);
+            encaps(type, cmd, dst, port_str, sline, packet);
+
+            int ns = sendto(sfd, packet, strlen(packet), 0, (struct sockaddr *)&saddr, len);
+            if (ns == -1)
+            {
+                cerr << "Send failed!" << endl;
+                exit(1);
+            } 
+
+            bzero(buf,128);
+            
+            int nr = recvfrom(sfd, buf, 128, 0, NULL, NULL);
+            if (nr == -1)
+            {
+                cerr << "Receive failed!" << endl;
+                exit(1);
+            } 
+
+            cout << buf << endl;
 
 
 
