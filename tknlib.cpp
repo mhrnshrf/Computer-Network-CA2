@@ -2,6 +2,8 @@
 
 using namespace std;
 
+
+
 int  parse(char *line, char **words)
 {
 	 int count = 0;
