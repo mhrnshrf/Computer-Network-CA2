@@ -17,10 +17,17 @@ extern int  parse(char *line, char **words);
 extern int length(char* s);
 extern void itoa(int i,char* characters);
 extern int char_s_to_int(char *char_s);
-extern void encaps(char* type, char* cmd, char* dst, char* src, char* data, char* packet);
+extern void encaps(const char* type, const char* cmd, const char* dst, const char* src, const char* data, char* packet);
 extern int route(char* packet, char *port[], int portcount);
 extern bool issw(char* packet);
 extern bool iscl(char* packet);
 extern bool issr(char* packet);
+extern bool issp(char* packet);
 extern bool isfirst(char* packet);
+extern int getdst(char* packet);
+extern int getsrc(char* packet);
+extern void chdst(char* buf, char* dst, char* packout);
+extern void chsrc(char* buf, char* src, char* packout);
+extern void chtype(char* buf, char* type, char* packout);
+extern void chdir(char* buf, char* packout);
 #endif

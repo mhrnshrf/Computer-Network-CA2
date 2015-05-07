@@ -45,6 +45,7 @@ void *read_console(void* port)
     char token[20];
     char port_str[4];
     int sw_portno;
+   
 
     int sfd;
     socklen_t len;
@@ -89,7 +90,7 @@ void *read_console(void* port)
             len = sizeof(saddr);
             bzero(buf, 128);
             strcpy(buf, "sw");
-            strcpy(buf, "ct");
+            strcat(buf, "ct");
             int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
             if (ns == -1)
             {
@@ -125,6 +126,7 @@ int main(int argc, char *argv[])
     socklen_t len;
     char buf[128];
     char dum[128];
+     char swt[] = "sw";
     struct sockaddr_in saddr, caddr;
 
     pthread_t th;
@@ -170,6 +172,8 @@ int main(int argc, char *argv[])
         if (nr != -1)
         {
             cout << "Received packet from " << inet_ntoa(caddr.sin_addr)<<  ":" << ntohs(caddr.sin_port) << endl;
+            cout << buf << endl;
+            cout << "is cl? " << iscl(buf) << endl;
             
             if (issw(buf))
             {
@@ -198,10 +202,18 @@ int main(int argc, char *argv[])
                     // }
 
                     cl.push_back(caddr.sin_port);
-                    ip.push_back(getip(buf));
-                    
+                    ip.push_back(getsrc(buf));
+
                     caddr.sin_port = server;
-                    int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
+                    // settype(buf, "sw");
+                    char pack[128];
+                    bzero(pack, 128);
+
+                    chtype(buf, swt, pack);
+
+                    cout << "send to server: " << pack;
+
+                    int ns = sendto(sfd, pack, nr, 0, (struct sockaddr *)&caddr, len);
                     if (ns == -1)
                     {
                         cerr << "Send failed!" << endl;
@@ -215,7 +227,25 @@ int main(int argc, char *argv[])
                 if (isfirst(buf))
                 {
                     server = caddr.sin_port;
+                    cout << "server connected on: " << server << endl;
 
+                }
+                else
+                {
+                    int target = getdst(buf);
+                    for (int i = 0; i < ip.size(); ++i)
+                    {
+                        if (ip[i] == target)
+                        {
+                            caddr.sin_port = cl[i];
+                            int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
+                            if (ns == -1)
+                            {
+                                cerr << "Send failed!" << endl;
+                                exit(1);
+                            }  
+                        }
+                    }
                 }
 
 

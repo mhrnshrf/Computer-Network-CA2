@@ -36,131 +36,10 @@ int setip()
 
 
 
-
-
-
-
-
-
-
-
- void* read_console(void*){
-    int i=0;
-
-char line [500];
-
-char usr[20];
-char pass[20];
-char token [20];
-char port_no[10];
-char service[100];
-char file[100];
-char access_type[10];
-char data[1000];
-char * command[20];
-bzero(line,500);
-bzero(usr,20);
-bzero(pass,20);
-bzero(token,20);
-bzero(service,100);
-bzero(access_type,10);
-bzero(file,100);
-bzero(data,1000);
-bzero(port_no,10);
-
-    read(0, line, sizeof(line));
-    parse(line, command);
-    strcpy(token, command[i++]);
-        if (string(token) == "Login")
-    {
-        strcpy(usr, command[i++]);
-        strcpy(pass, command[i++]);
-        //to do:
-        // fill the rout table and find shortest path
-
-
-
- }
- else if(string(token)=="Connect"){
-    strcpy(token, command[i++]);
-    if(string(token)=="Switch"){
-        strcpy(port_no, command[i++]);
-        // to do:
-        // connect to special switch
-        //set ip
-
-    }
-    else{
-        cout<<"command not found!"<<endl;
-        exit(1);
-    }
-
- }
- else if(string(token)=="Get"){
-
-
- }
- else if(string(token)=="Request"){
-    strcpy(service, command[i++]);
-     strcpy(access_type, command[i++]);
- }
-
- else if(string(token)=="Send"){
-    strcpy(file, command[i++]);
-   
- }
-
- else if(string(token)=="Append"){
-    strcpy(file, command[i++]);
-    strcpy(data, command[i++]);
-   
- }
-
-
- else if(string(token)=="Logout"){
-   
- }
- else {
-    cout<<"Command not found"<<endl;
- }
-
-}
-
-
-
-
-
-
-
-
-
-
 int main(int argc, char *argv[])
 {
 
-    //     pthread_t th;
-    // int rc;
-    // for (int i = 0; i < 100; ++i)
-    // {
-    //     rc = pthread_create(&th, NULL, &read_console, (void*)NULL);
-    // }
- 
-
-    // int sfd, n, i, x;
-    // socklen_t len;
-    // char sline[MAX], rline[MAX+1];
-    // struct sockaddr_in saddr;
     int i,x;
- 
-    // sfd = socket(AF_INET, SOCK_DGRAM, 0);
-    // if (argc < 3) 
-    // {
-    //     char error[]="ERROR: NOT ENOUGH ARGUMNETS\n";
-    //     write( 2, error, sizeof(error)-1);
-    //     exit(1);
-    // }
-
-    // int ca_port_number = char_s_to_int(argv[2]);
 
 while(1)
 {
@@ -175,7 +54,7 @@ while(1)
     char pass[20];
     char service[20];
     char access[20];
-    char data[20];
+    char data[100];
     char port_str[4];
 
 
@@ -189,7 +68,7 @@ while(1)
     bzero(pass,20);
     bzero(service,20);
     bzero(access,20);
-    bzero(data,20);
+    bzero(data,100);
     bzero(port_str,4);
     
     i = 0;
@@ -222,6 +101,13 @@ while(1)
             // TODO
             cout << sw_portno << endl;
             x = setip();
+            char ipstr[] = "";
+            char src[4];
+            char ext[] = "000";
+            bzero(src,sizeof(src));
+            itoa(x, ipstr);
+
+            padding(ipstr, 4, src);
 
             cout << x << endl;
 
@@ -239,16 +125,18 @@ while(1)
          
             printf("Client running...\n");
 
-            len=sizeof(saddr);
-            char dst[] = "0000";
-            char type[] = "cl";
-            char cmd[] = "ct"; 
-            char* src;
-            // TODO padding port_str
-            itoa(x, src);
-            encaps(type, cmd, dst, port_str, sline, packet);
+            bzero(buf, 128);
 
-            int ns = sendto(sfd, packet, strlen(packet), 0, (struct sockaddr *)&saddr, len);
+            encaps("cl", "ct", "9999", src, "salam", buf);
+            // cout << "ip: " << src << endl;
+            // chdir(buf, packet);
+
+            // cout << "1st?  " << isfirst(buf) << endl;
+            // cout << "Im sending: " << packet << endl;
+
+
+            len=sizeof(saddr);
+            int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
             if (ns == -1)
             {
                 cerr << "Send failed!" << endl;

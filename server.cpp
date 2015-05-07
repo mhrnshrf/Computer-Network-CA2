@@ -85,8 +85,8 @@ void *read_console(void* port)
 
             len = sizeof(saddr);
             bzero(buf, 128);
-            strcpy(buf, "sw");
-            strcpy(buf, "ct");
+            strcpy(buf, "sr");
+            strcat(buf, "ct");
             int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
             if (ns == -1)
             {
@@ -121,6 +121,7 @@ int main(int argc, char *argv[])
     port = atoi(argv[1]);
     socklen_t len;
     char buf[128];
+    char sr[] = "sr";
     char dum[128];
     struct sockaddr_in saddr, caddr;
 
@@ -171,7 +172,17 @@ int main(int argc, char *argv[])
             if (issw(buf))
             {
                 // setdst()
-                int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
+                // int target = getsrc(buf);
+                // char dst[] = "";
+                // itoa(target, dst);
+                // padding(dst, 4, );
+                // chdir(buf);
+                char pack[128];
+                bzero(pack, 128);
+                strcat(buf,"SERVER");
+                chtype(buf, sr, pack);
+                cout << pack << endl;
+                int ns = sendto(sfd, pack, strlen(pack), 0, (struct sockaddr *)&caddr, len);
                 if (ns == -1)
                 {
                     cerr << "Send failed!" << endl;
@@ -179,9 +190,10 @@ int main(int argc, char *argv[])
                 }
                 
             }
-            else if (iscl(buf))
+            else if (issp(buf))
             {
-                // TODO replace with issp()
+                // TODO 
+
 
             }            
 
