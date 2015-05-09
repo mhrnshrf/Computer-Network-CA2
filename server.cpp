@@ -16,6 +16,8 @@
 
 
 
+
+
 using namespace std;
 
 vector<int> sw;
@@ -118,7 +120,6 @@ int main(int argc, char *argv[])
     socklen_t len;
     char buf[128];
     char srtype[] = "sr";
-    char dum[128];
     struct sockaddr_in saddr, caddr;
 
     pthread_t th;
@@ -167,15 +168,17 @@ int main(int argc, char *argv[])
             
             if (issw(buf))
             {
-                // setdst()
-                // int target = getsrc(buf);
-                // char dst[] = "";
-                // itoa(target, dst);
-                // padding(dst, 4, );
-                // chdir(buf);
+                char dst[8];
+                char rep[2];
+                bzero(rep, 2);
+                strcpy(rep, "rp") ;
+                bzero(dst, 8);
+                itoa(getsrc(buf), dst);
+                padding(dst, 8);
                 strcat(buf,"SERVER");
+                chdst(buf, dst);
+                chcmd(buf, rep);
                 chtype(buf, srtype);
-                cout << buf << endl;
                 int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&caddr, len);
                 if (ns == -1)
                 {
@@ -195,7 +198,6 @@ int main(int argc, char *argv[])
         }
         
        
-        // cout << "Timeout!\n";
         // close(sfd);
 
 

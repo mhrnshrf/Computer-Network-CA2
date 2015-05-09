@@ -197,6 +197,7 @@ void chdst(char* buf, char* dst)
     copy(buf, buf+4, packout);
     strcat(packout, dst);
     strcat(packout, tmp);
+    bzero(buf, 128);
     copy(packout, packout+128, buf);
 }
 
@@ -210,6 +211,7 @@ void chsrc(char* buf, char* src)
     strncpy(packout, buf, 12);
     strcat(packout, src);
     strcat(packout, tmp);
+    bzero(buf, 128);
     strcpy(buf, packout);
 }
 
@@ -218,11 +220,26 @@ void chtype(char* buf, char* type)
     char tmp[126];
     bzero(tmp,126);
     copy(buf+2, buf+128, tmp);
+    bzero(buf, 128);
     strcpy(buf, type);
     strcat(buf, tmp);
 
 }
 
+void chcmd(char* buf, char* cmd)
+{
+    char tmp[124];
+    char type[2];
+    bzero(tmp,124);
+    bzero(type,2);
+    copy(buf, buf+2, type);
+    copy(buf+4, buf+128, tmp);
+    bzero(buf, 128);
+    strcpy(buf, type);
+    strcat(buf, cmd);
+    strcat(buf, tmp);
+
+}
 void chdir(char* buf)
 {
     char src[4];

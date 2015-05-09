@@ -142,6 +142,7 @@ while(1)
             // chsrc(buf, dest);
 
             // // cout << "1st?  " << isfirst(buf) << endl;
+            // chcmd(buf, sr);
             cout << "Im sending: " << buf << endl;
             // cout << "src: " << getdst(buf) << endl;
 

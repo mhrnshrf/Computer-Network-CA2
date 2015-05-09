@@ -28,12 +28,18 @@ void *read_console(void* port)
 {
 
     int i = 0;
-    int* myport = (int *) port;
+    int* portpoint = (int *) port;
+    int myport = *portpoint;
     char *command[20];
     char line[128];
     char tmp[128];
     char token[20];
-    char port_str[4];
+    char port_str[8];
+    char mystr[8];
+    bzero(port_str,8);
+    bzero(mystr,8);
+    itoa(myport, mystr);
+
     int sw_portno;
    
 
@@ -79,8 +85,8 @@ void *read_console(void* port)
 
             len = sizeof(saddr);
             bzero(buf, 128);
-            strcpy(buf, "sw");
-            strcat(buf, "ct");
+            padding(mystr, 8);
+            encaps("sw", "ct", "00000000", mystr, "imswitch", buf);            
             int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
             if (ns == -1)
             {
@@ -163,16 +169,16 @@ int main(int argc, char *argv[])
         {
             cout << "Received packet from " << inet_ntoa(caddr.sin_addr)<<  ":" << ntohs(caddr.sin_port) << endl;
             cout << buf << endl;
-            cout << "is 1st? " << isfirst(buf) << endl;
+            // cout << "is 1st? " << isfirst(buf) << endl;
             
             if (issw(buf))
             {
                 if (isfirst(buf))
                 {
-                    // TODO     get the real port
-                    // sw.push_back(caddr.sin_port);
+                    // TODO     
+                    sw.push_back(getsrc(buf));
                     
-                    cout << "connected to me: " << caddr.sin_port << endl;
+                    cout << "sw connected to me: " << getsrc(buf) << endl;
                 }
             }
             else if (iscl(buf))
@@ -196,9 +202,12 @@ int main(int argc, char *argv[])
                     cl.push_back(caddr.sin_port);
                     ip.push_back(getsrc(buf));
 
-                    caddr.sin_port = server;
+                    caddr.sin_family = AF_INET;
+                    inet_pton(AF_INET, "localhost", &caddr.sin_addr);
+                    caddr.sin_port = htons(server);
 
                     chtype(buf, swtype);
+
 
                     cout << "send to server: " << buf << endl;
 
