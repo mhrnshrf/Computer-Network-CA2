@@ -101,13 +101,11 @@ while(1)
             // TODO
             cout << sw_portno << endl;
             x = setip();
-            char ipstr[] = "";
-            char src[4];
-            char ext[] = "000";
-            bzero(src,sizeof(src));
+            char ipstr[8];
+            bzero(ipstr,8);
             itoa(x, ipstr);
 
-            padding(ipstr, 4, src);
+            padding(ipstr, 8);
 
             cout << x << endl;
 
@@ -126,13 +124,26 @@ while(1)
             printf("Client running...\n");
 
             bzero(buf, 128);
+            encaps("cl", "ct", "00009999", ipstr, "salam", buf);
+            char sr[] = "sr";
+            char dest[] = "5885";
+            char src[] = "2323";
+            padding(src, 8);
+            padding(dest, 8);
 
-            encaps("cl", "ct", "9999", src, "salam", buf);
+            // itoa(saddr.sin_port, dest);
+            // cout << "src " << strlen(src) << endl;
+
             // cout << "ip: " << src << endl;
-            // chdir(buf, packet);
+            // cout << "Buffer is : " << buf << endl;
+            // cout << "Buffer is : " << buf << endl;
+            // chtype(buf, sr);
+            // chdst(buf, src);
+            // chsrc(buf, dest);
 
-            // cout << "1st?  " << isfirst(buf) << endl;
-            // cout << "Im sending: " << packet << endl;
+            // // cout << "1st?  " << isfirst(buf) << endl;
+            cout << "Im sending: " << buf << endl;
+            // cout << "src: " << getdst(buf) << endl;
 
 
             len=sizeof(saddr);

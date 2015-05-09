@@ -2,16 +2,18 @@
 
 using namespace std;
 
-void padding(char*  in, int len, char* out)
+void padding(char*  in, int len)
 {
     int dif = len - strlen(in);
-    bzero(out,4);
+    char out[8];
+    bzero(out,8);
 
     while(dif > 0){
         strcat(out, "0");
         dif--;
     }
     strcat(out, in);
+    strcpy(in, out);
 }
 
 
@@ -173,57 +175,60 @@ int getip(char* packet)
 
 int getdst(char* packet)
 {
-    char res[4];
-    res[0] = packet[4];
-    res[1] = packet[5];
-    res[2] = packet[6];
-    res[3] = packet[7];
-
+    char res[8];
+    copy(packet+4, packet+12, res);
     return atoi(res);
 }
 
 int getsrc(char* packet)
 {
     char res[4];
-    res[0] = packet[8];
-    res[1] = packet[9];
-    res[2] = packet[10];
-    res[3] = packet[11];
-
+    copy(packet+12, packet+20, res);
     return atoi(res);
 }
 
-void chdst(char* buf, char* dst, char* packout)
-{
-    char tmp[120];
-    copy(buf+8, buf+128, tmp);
-    strncpy(packout, buf, 4);
-    strcat(packout, dst);
-    strcat(packout, tmp);
-}
-
-void chsrc(char* buf, char* src, char* packout)
+void chdst(char* buf, char* dst)
 {
     char tmp[116];
+    char packout[128];
+    bzero(tmp,116);
+    bzero(packout,128);
     copy(buf+12, buf+128, tmp);
-    strncpy(packout, buf, 8);
+    copy(buf, buf+4, packout);
+    strcat(packout, dst);
+    strcat(packout, tmp);
+    copy(packout, packout+128, buf);
+}
+
+void chsrc(char* buf, char* src)
+{
+    char tmp[108];
+    char packout[128];
+    bzero(tmp,108);
+    bzero(packout,128);
+    copy(buf+20, buf+128, tmp);
+    strncpy(packout, buf, 12);
     strcat(packout, src);
     strcat(packout, tmp);
+    strcpy(buf, packout);
 }
 
-void chtype(char* buf, char* type, char* packout)
+void chtype(char* buf, char* type)
 {
     char tmp[126];
+    bzero(tmp,126);
     copy(buf+2, buf+128, tmp);
-    strcpy(packout, type);
-    strcat(packout, tmp);
+    strcpy(buf, type);
+    strcat(buf, tmp);
+
 }
 
-void chdir(char* buf, char* packout)
+void chdir(char* buf)
 {
     char src[4];
     char dst[4];
     char tmp[116];
+    char packout[128];
     bzero(src,4);
     bzero(dst,4);
     bzero(tmp,116);

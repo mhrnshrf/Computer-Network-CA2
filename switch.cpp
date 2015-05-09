@@ -23,16 +23,6 @@ vector<int> cl;
 vector<int> ip;
 int server;
 
-int index(int port, char *argv[])
-{
-    for (int i = 1; i < 10; ++i)
-    {
-        if (atoi(argv[i]) == port)
-            return i-1;
-        
-    }
-}
-
 
 void *read_console(void* port)
 {
@@ -126,7 +116,7 @@ int main(int argc, char *argv[])
     socklen_t len;
     char buf[128];
     char dum[128];
-     char swt[] = "sw";
+    char swtype[] = "sw";
     struct sockaddr_in saddr, caddr;
 
     pthread_t th;
@@ -173,13 +163,14 @@ int main(int argc, char *argv[])
         {
             cout << "Received packet from " << inet_ntoa(caddr.sin_addr)<<  ":" << ntohs(caddr.sin_port) << endl;
             cout << buf << endl;
-            cout << "is cl? " << iscl(buf) << endl;
+            cout << "is 1st? " << isfirst(buf) << endl;
             
             if (issw(buf))
             {
                 if (isfirst(buf))
                 {
-                    sw.push_back(caddr.sin_port);
+                    // TODO     get the real port
+                    // sw.push_back(caddr.sin_port);
                     
                     cout << "connected to me: " << caddr.sin_port << endl;
                 }
@@ -189,6 +180,7 @@ int main(int argc, char *argv[])
                 // TODO 
                 if (isfirst(buf))
                 {
+                    // cout << "sdjfgggggggggjjfddddddddddddddddddddd";
                     // TODO dec ttl
                     // for (int i = 0; i < sw.size(); ++i)
                     // {
@@ -205,15 +197,12 @@ int main(int argc, char *argv[])
                     ip.push_back(getsrc(buf));
 
                     caddr.sin_port = server;
-                    // settype(buf, "sw");
-                    char pack[128];
-                    bzero(pack, 128);
 
-                    chtype(buf, swt, pack);
+                    chtype(buf, swtype);
 
-                    cout << "send to server: " << pack;
+                    cout << "send to server: " << buf << endl;
 
-                    int ns = sendto(sfd, pack, nr, 0, (struct sockaddr *)&caddr, len);
+                    int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
                     if (ns == -1)
                     {
                         cerr << "Send failed!" << endl;
@@ -226,7 +215,7 @@ int main(int argc, char *argv[])
                 // TODO 
                 if (isfirst(buf))
                 {
-                    server = caddr.sin_port;
+                    server = getsrc(buf);
                     cout << "server connected on: " << server << endl;
 
                 }

@@ -12,7 +12,7 @@
 #include <map>
 
 using namespace std;
-extern void padding(char*  in, int len, char* out);
+extern void padding(char*  in, int len);
 extern int  parse(char *line, char **words);
 extern int length(char* s);
 extern void itoa(int i,char* characters);
@@ -26,8 +26,8 @@ extern bool issp(char* packet);
 extern bool isfirst(char* packet);
 extern int getdst(char* packet);
 extern int getsrc(char* packet);
-extern void chdst(char* buf, char* dst, char* packout);
-extern void chsrc(char* buf, char* src, char* packout);
-extern void chtype(char* buf, char* type, char* packout);
-extern void chdir(char* buf, char* packout);
+extern void chdst(char* buf, char* dst);
+extern void chsrc(char* buf, char* src);
+extern void chtype(char* buf, char* type);
+extern void chdir(char* buf);
 #endif

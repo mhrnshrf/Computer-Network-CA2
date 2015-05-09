@@ -20,28 +20,24 @@ using namespace std;
 
 vector<int> sw;
 
-int index(int port, char *argv[])
-{
-    for (int i = 1; i < 10; ++i)
-    {
-        if (atoi(argv[i]) == port)
-            return i-1;
-        
-    }
-}
 
 
 void *read_console(void* port)
 {
 
     int i = 0;
-    int* myport = (int *) port;
+    int* portpoint = (int *) port;
+    int myport = *portpoint;
+    int sw_portno;
     char *command[20];
     char line[128];
     char tmp[128];
     char token[20];
-    char port_str[4];
-    int sw_portno;
+    char port_str[8];
+    char mystr[8];
+    bzero(port_str,8);
+    bzero(mystr,8);
+    itoa(myport, mystr);
 
     int sfd;
     socklen_t len;
@@ -85,8 +81,8 @@ void *read_console(void* port)
 
             len = sizeof(saddr);
             bzero(buf, 128);
-            strcpy(buf, "sr");
-            strcat(buf, "ct");
+            padding(mystr, 8);
+            encaps("sr", "ct", "00000000", mystr, "imserver", buf);
             int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
             if (ns == -1)
             {
@@ -121,7 +117,7 @@ int main(int argc, char *argv[])
     port = atoi(argv[1]);
     socklen_t len;
     char buf[128];
-    char sr[] = "sr";
+    char srtype[] = "sr";
     char dum[128];
     struct sockaddr_in saddr, caddr;
 
@@ -177,12 +173,10 @@ int main(int argc, char *argv[])
                 // itoa(target, dst);
                 // padding(dst, 4, );
                 // chdir(buf);
-                char pack[128];
-                bzero(pack, 128);
                 strcat(buf,"SERVER");
-                chtype(buf, sr, pack);
-                cout << pack << endl;
-                int ns = sendto(sfd, pack, strlen(pack), 0, (struct sockaddr *)&caddr, len);
+                chtype(buf, srtype);
+                cout << buf << endl;
+                int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&caddr, len);
                 if (ns == -1)
                 {
                     cerr << "Send failed!" << endl;
