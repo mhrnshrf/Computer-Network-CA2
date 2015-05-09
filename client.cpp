@@ -73,6 +73,11 @@ while(1)
     
     i = 0;
     int sw_portno;
+    char ipstr[8];
+    int sfd, n;
+    socklen_t len;
+    char sline[MAX], rline[MAX+1];
+    struct sockaddr_in saddr;
 
 
     
@@ -101,7 +106,6 @@ while(1)
             // TODO
             cout << sw_portno << endl;
             x = setip();
-            char ipstr[8];
             bzero(ipstr,8);
             itoa(x, ipstr);
 
@@ -109,10 +113,6 @@ while(1)
 
             cout << x << endl;
 
-            int sfd, n;
-            socklen_t len;
-            char sline[MAX], rline[MAX+1];
-            struct sockaddr_in saddr;
 
             sfd = socket(AF_INET, SOCK_DGRAM, 0);   
          
@@ -124,7 +124,7 @@ while(1)
             printf("Client running...\n");
 
             bzero(buf, 128);
-            encaps("cl", "ct", "00009999", ipstr, "salam", buf);
+            encaps("cl", "ct", "00001000", ipstr, "imclient", buf);
             char sr[] = "sr";
             char dest[] = "5885";
             char src[] = "2323";
@@ -143,9 +143,9 @@ while(1)
 
             // // cout << "1st?  " << isfirst(buf) << endl;
             // chcmd(buf, sr);
-            cout << "Im sending: " << buf << endl;
             // cout << "src: " << getdst(buf) << endl;
 
+            cout << "Im sending: " << buf << endl;
 
             len=sizeof(saddr);
             int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
@@ -176,7 +176,7 @@ while(1)
         }
         
     }  
-    else if (string(token) == "Get")
+    else if (string(token) == "Get") 
     {
         strcpy(token, command[i++]);
 
@@ -191,6 +191,26 @@ while(1)
                 if(string(token) == "Services")
                 {
                     // TODO
+                    encaps("cl", "gl", "00001000", ipstr, "givelistplz", buf);
+        
+                    len=sizeof(saddr);
+                    int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
+                    if (ns == -1)
+                    {
+                        cerr << "Send failed!" << endl;
+                        exit(1);
+                    }
+
+                    bzero(buf,128);
+            
+                    int nr = recvfrom(sfd, buf, 128, 0, NULL, NULL);
+                    if (nr == -1)
+                    {
+                        cerr << "Receive failed!" << endl;
+                        exit(1);
+                    } 
+
+                    cout << buf << endl;
                 }
                 else
                 {
@@ -233,6 +253,8 @@ while(1)
     else if (string(token) == "Logout")
     {
         // TODO
+        close(sfd);
+        // exit(1);
     }
     else
     {

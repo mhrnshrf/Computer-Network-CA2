@@ -169,13 +169,17 @@ int main(int argc, char *argv[])
             if (issw(buf))
             {
                 char dst[8];
+                char src[8];
                 char rep[2];
                 bzero(rep, 2);
-                strcpy(rep, "rp") ;
                 bzero(dst, 8);
+                bzero(src, 8);
+                strcpy(rep, "rp");
+                strcpy(src, "00001000");
                 itoa(getsrc(buf), dst);
                 padding(dst, 8);
                 strcat(buf,"SERVER");
+                chsrc(buf, src);
                 chdst(buf, dst);
                 chcmd(buf, rep);
                 chtype(buf, srtype);

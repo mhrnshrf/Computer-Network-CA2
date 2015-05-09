@@ -26,9 +26,11 @@ extern bool issp(char* packet);
 extern bool isfirst(char* packet);
 extern int getdst(char* packet);
 extern int getsrc(char* packet);
+extern int ttl(char* packet);
 extern void chdst(char* buf, char* dst);
 extern void chsrc(char* buf, char* src);
 extern void chtype(char* buf, char* type);
 extern void chcmd(char* buf, char* cmd);
 extern void chdir(char* buf);
+extern void decttl(char* buf);
 #endif

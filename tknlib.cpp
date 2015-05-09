@@ -176,14 +176,24 @@ int getip(char* packet)
 int getdst(char* packet)
 {
     char res[8];
+    bzero(res, 8);
     copy(packet+4, packet+12, res);
     return atoi(res);
 }
 
 int getsrc(char* packet)
 {
-    char res[4];
+    char res[8];
+    bzero(res, 8);
     copy(packet+12, packet+20, res);
+    return atoi(res);
+}
+
+int ttl(char* packet)
+{
+    char res[2];
+    bzero(res, 2);
+    copy(packet+20, packet+22, res);
     return atoi(res);
 }
 
@@ -240,62 +250,23 @@ void chcmd(char* buf, char* cmd)
     strcat(buf, tmp);
 
 }
-void chdir(char* buf)
+void decttl(char* buf)
 {
-    char src[4];
-    char dst[4];
-    char tmp[116];
-    char packout[128];
-    bzero(src,4);
-    bzero(dst,4);
-    bzero(tmp,116);
-    copy(buf+4, buf+8, src);
-    copy(buf+8, buf+12, dst);
-    copy(buf+12, buf+128, tmp);
-    strncpy(packout, buf, 4);
-    strcat(packout, dst);
-    strcat(packout, src);
-    strcat(packout, tmp);
-    cout << "src is:" << src << endl;
-    cout << "dst is:" << dst << endl;
-    cout << "tmp is:" << tmp << endl;
-
+    int ttl;
+    char tmp[2];
+    char pre[20];
+    char post[106];
+    bzero(tmp, 2);
+    bzero(pre, 20);
+    bzero(post, 106);
+    copy(buf+20, buf+22, tmp);
+    ttl = atoi(tmp);
+    ttl--;
+    itoa(ttl, tmp);
+    copy(buf, buf+20, pre);
+    copy(buf+22, buf+128, post);
+    bzero(buf,128);
+    strcpy(buf, pre);
+    strcat(buf, tmp);
+    strcat(buf, post);
 }
-
-// void chsrc(char* buf, char* src, char* packout)
-// {
-//     packet[8] = src[0];
-//     packet[9] = src[1];
-//     packet[10] = src[2];
-//     packet[11] = src[3];
-// }
-
-// void chtype(char* packet, char* type)
-// {
-//     // strcpy(packet, type);
-//     // strncat(packet, type[0], 2);
-//     copy(type+1, type+3, packet);
-// }
-
-
-// void chdir(char* packet)
-// {
-//     char tmp[4];
-
-//     tmp[0] = packet[4];
-//     tmp[1] = packet[5];
-//     tmp[2] = packet[6];
-//     tmp[3] = packet[7];
-
-//     packet[4] = packet[8];
-//     packet[5] = packet[9];
-//     packet[6] = packet[10];
-//     packet[7] = packet[11];
-
-//     packet[8] = tmp[0];
-//     packet[9] = tmp[1];
-//     packet[10] = tmp[2];
-//     packet[11] = tmp[3];
-
-
-// }

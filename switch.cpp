@@ -13,7 +13,7 @@
 #include "tknlib.h"
 #include <map>
 #include <vector>
-
+#define SRVR 1000
 
 
 using namespace std;
@@ -21,7 +21,8 @@ using namespace std;
 vector<int> sw;
 vector<int> cl;
 vector<int> ip;
-int server;
+int server = 0;
+int upswitch = 0;
 
 
 void *read_console(void* port)
@@ -93,6 +94,7 @@ void *read_console(void* port)
                 cerr << "Send failed!" << endl;
                 exit(1);
             }
+            upswitch = sw_portno;
             sw.push_back(sw_portno);
 
         }
@@ -121,8 +123,13 @@ int main(int argc, char *argv[])
     port = atoi(argv[1]);
     socklen_t len;
     char buf[128];
-    char dum[128];
+    char message[128];
     char swtype[] = "sw";
+    char src[8];
+    bzero(src, 8);
+    strcpy(src, argv[1]);
+    padding(src, 8);
+
     struct sockaddr_in saddr, caddr;
 
     pthread_t th;
@@ -177,8 +184,75 @@ int main(int argc, char *argv[])
                 {
                     // TODO     
                     sw.push_back(getsrc(buf));
-                    
-                    cout << "sw connected to me: " << getsrc(buf) << endl;
+                    cout << "switch connected to me: " << getsrc(buf) << endl;
+                }
+                else
+                {
+                    if (getsrc(buf) == SRVR)
+                    {
+                        bool found = false;
+                        int target = getdst(buf);
+                        for (int i = 0; i < ip.size(); ++i)
+                        {
+                            if (ip[i] == target)
+                            {
+                                found = true;
+                                caddr.sin_port = cl[i];
+                                int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
+                                if (ns == -1)
+                                {
+                                    cerr << "Send failed!" << endl;
+                                    exit(1);
+                                }  
+                            }
+                        }
+
+                        if (!found)
+                        {
+                            for (int i = 0; i < sw.size(); ++i)
+                            {
+                                if (sw[i] != ntohs(caddr.sin_port) )
+                                {
+                                    caddr.sin_family = AF_INET;
+                                    inet_pton(AF_INET, "localhost", &caddr.sin_addr);
+                                    caddr.sin_port = htons(sw[i]);
+
+                                    chtype(buf, swtype);
+                                    int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
+                                    if (ns == -1)
+                                    {
+                                        cerr << "Send failed!" << endl;
+                                        exit(1);
+                                    } 
+                                    
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        caddr.sin_family = AF_INET;
+                        inet_pton(AF_INET, "localhost", &caddr.sin_addr);
+                        chtype(buf, swtype);
+
+                        if (server != 0)
+                        {
+                            caddr.sin_port = htons(server);
+                            cout << "send to server: " << buf << endl;
+                        }
+                        else
+                        {
+                            caddr.sin_port = htons(upswitch);
+                            cout << "send to upswitch: " << buf << endl;
+                        }
+
+                        int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
+                        if (ns == -1)
+                        {
+                            cerr << "Send failed!" << endl;
+                            exit(1);
+                        }
+                    }
                 }
             }
             else if (iscl(buf))
@@ -186,30 +260,34 @@ int main(int argc, char *argv[])
                 // TODO 
                 if (isfirst(buf))
                 {
-                    // cout << "sdjfgggggggggjjfddddddddddddddddddddd";
-                    // TODO dec ttl
-                    // for (int i = 0; i < sw.size(); ++i)
-                    // {
-                    //     caddr.sin_port = sw[i];
-                    //     int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&caddr, len);
-                    //     if (ns == -1)
-                    //     {
-                    //         cerr << "Send failed!" << endl;
-                    //         exit(1);
-                    //     } 
-                    // }
-
                     cl.push_back(caddr.sin_port);
                     ip.push_back(getsrc(buf));
+                    bzero(message, 128);
+                    strcpy(message, "You're connected!");
+                    int ns = sendto(sfd, message, strlen(message), 0, (struct sockaddr *)&caddr, len);
+                    if (ns == -1)
+                    {
+                        cerr << "Send failed!" << endl;
+                        exit(1);
+                    } 
+                }
 
+                else
+                {
                     caddr.sin_family = AF_INET;
                     inet_pton(AF_INET, "localhost", &caddr.sin_addr);
-                    caddr.sin_port = htons(server);
-
                     chtype(buf, swtype);
 
-
-                    cout << "send to server: " << buf << endl;
+                    if (server != 0)
+                    {
+                        caddr.sin_port = htons(server);
+                        cout << "send to server: " << buf << endl;
+                    }
+                    else
+                    {
+                        caddr.sin_port = htons(upswitch);
+                        cout << "send to upswitch: " << buf << endl;
+                    }
 
                     int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
                     if (ns == -1)
@@ -230,11 +308,13 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
+                    bool found = false;
                     int target = getdst(buf);
                     for (int i = 0; i < ip.size(); ++i)
                     {
                         if (ip[i] == target)
                         {
+                            found = true;
                             caddr.sin_port = cl[i];
                             int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
                             if (ns == -1)
@@ -244,10 +324,26 @@ int main(int argc, char *argv[])
                             }  
                         }
                     }
+
+                    if (!found)
+                    {
+                        for (int i = 0; i < sw.size(); ++i)
+                        {
+                            caddr.sin_family = AF_INET;
+                            inet_pton(AF_INET, "localhost", &caddr.sin_addr);
+                            caddr.sin_port = htons(sw[i]);
+                           
+                            chtype(buf, swtype);
+                            int ns = sendto(sfd, buf, nr, 0, (struct sockaddr *)&caddr, len);
+                            if (ns == -1)
+                            {
+                                cerr << "Send failed!" << endl;
+                                exit(1);
+                            } 
+                            
+                        }
+                    }
                 }
-
-
-
             }
 
         }
