@@ -40,6 +40,9 @@ int main(int argc, char *argv[])
 {
 
     int i,x;
+    char usr[3];
+    bzero(usr,3); 
+    bool login = false;
 
 while(1)
 {
@@ -50,11 +53,10 @@ while(1)
     char tmp[128];
     char line[128];
     char token[20];
-    char usr[20];
     char pass[20];
     char service[20];
     char access[20];
-    char data[100];
+    char data[101];
     char port_str[4];
 
 
@@ -64,7 +66,6 @@ while(1)
     bzero(line,128);
     bzero(tmp,128);
     bzero(token,20);
-    bzero(usr,20);    
     bzero(pass,20);
     bzero(service,20);
     bzero(access,20);
@@ -89,9 +90,10 @@ while(1)
 
     if (string(token) == "Login")
     {
+        // TODO 
         strcpy(usr , command[i++]);
         strcpy(pass , command[i++]);
-        // TODO 
+        login = true;
 
     }
     else if (string(token) == "Connect")
@@ -104,67 +106,85 @@ while(1)
             sw_portno = atoi(port_str);
 
             // TODO
-            cout << sw_portno << endl;
-            x = setip();
-            bzero(ipstr,8);
-            itoa(x, ipstr);
-
-            padding(ipstr, 8);
-
-            cout << x << endl;
-
-
-            sfd = socket(AF_INET, SOCK_DGRAM, 0);   
-         
-            bzero(&saddr, sizeof(saddr));
-            saddr.sin_family = AF_INET;
-            inet_pton(AF_INET, argv[1], &saddr.sin_addr);
-            saddr.sin_port = htons(sw_portno);  
-         
-            printf("Client running...\n");
-
-            bzero(buf, 128);
-            encaps("cl", "ct", "00001000", ipstr, "imclient", buf);
-            char sr[] = "sr";
-            char dest[] = "5885";
-            char src[] = "2323";
-            padding(src, 8);
-            padding(dest, 8);
-
-            // itoa(saddr.sin_port, dest);
-            // cout << "src " << strlen(src) << endl;
-
-            // cout << "ip: " << src << endl;
-            // cout << "Buffer is : " << buf << endl;
-            // cout << "Buffer is : " << buf << endl;
-            // chtype(buf, sr);
-            // chdst(buf, src);
-            // chsrc(buf, dest);
-
-            // // cout << "1st?  " << isfirst(buf) << endl;
-            // chcmd(buf, sr);
-            // cout << "src: " << getdst(buf) << endl;
-
-            cout << "Im sending: " << buf << endl;
-
-            len=sizeof(saddr);
-            int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
-            if (ns == -1)
+            if (login)
             {
-                cerr << "Send failed!" << endl;
-                exit(1);
-            } 
+                x = setip();
+                bzero(ipstr,8);
+                itoa(x, ipstr);
 
-            bzero(buf,128);
-            
-            int nr = recvfrom(sfd, buf, 128, 0, NULL, NULL);
-            if (nr == -1)
+                padding(ipstr, 8);
+
+                cout << x << endl;
+
+
+                sfd = socket(AF_INET, SOCK_DGRAM, 0);   
+             
+                bzero(&saddr, sizeof(saddr));
+                saddr.sin_family = AF_INET;
+                inet_pton(AF_INET, argv[1], &saddr.sin_addr);
+                saddr.sin_port = htons(sw_portno);  
+             
+                printf("Client running...\n");
+
+                bzero(buf, 128);
+                encaps("cl", "ct", "00001000", ipstr, "imclient", buf);
+
+                char sr[] = "sr";
+                char dest[] = "5885";
+                char src[] = "2323";
+                padding(src, 8);
+                padding(dest, 8);
+                // cout << "user: " << usr << endl;
+                // cout << "isfirst? " << isfirst(buf) << endl; 
+                // cout << "reqlist? " << reqlist(buf) << endl; 
+                // cout << "iscl? " << iscl(buf) << endl; 
+                // itoa(saddr.sin_port, dest);
+                // cout << "src " << strlen(src) << endl;
+
+                // cout << "ip: " << src << endl;
+                // cout << "Buffer is : " << buf << endl;
+                // chtype(buf, sr);
+                // cout << "Buffer is : " << buf << endl;
+                // chdst(buf, src);
+                // cout << "Buffer is : " << buf << endl;
+                // chsrc(buf, dest);
+                // cout << "Buffer is : " << buf << endl;
+                // chdata(buf, usr);
+                // cout << "Buffer is : " << buf << endl;
+
+                // // cout << "1st?  " << isfirst(buf) << endl;
+                // chcmd(buf, sr);
+                // cout << "src: " << getdst(buf) << endl;
+                // if (issr(buf))
+                //     cout << "sr\n";
+                // if (isfirst(buf))
+                //     cout << "1st\n";
+
+                cout << "Im sending: " << buf << endl;
+
+                len=sizeof(saddr);
+                int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
+                if (ns == -1)
+                {
+                    cerr << "Send failed!" << endl;
+                    exit(1);
+                } 
+
+                bzero(buf,128);
+                
+                int nr = recvfrom(sfd, buf, 128, 0, NULL, NULL);
+                if (nr == -1)
+                {
+                    cerr << "Receive failed!" << endl;
+                    exit(1);
+                } 
+
+                cout << buf << endl;
+            }
+            else
             {
-                cerr << "Receive failed!" << endl;
-                exit(1);
-            } 
-
-            cout << buf << endl;
+                cout << "First Login please!" << endl;
+            }
 
 
 
@@ -210,7 +230,9 @@ while(1)
                         exit(1);
                     } 
 
-                    cout << buf << endl;
+                    bzero(data, 101);
+                    copy(buf+27, buf+128, data);
+                    cout << data << endl;
                 }
                 else
                 {
@@ -254,6 +276,7 @@ while(1)
     {
         // TODO
         close(sfd);
+        login = false;
         // exit(1);
     }
     else

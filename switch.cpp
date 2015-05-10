@@ -70,6 +70,7 @@ void *read_console(void* port)
             cout <<  "I connect to: " << sw_portno << endl;
 
             sw.push_back(sw_portno);
+            upswitch = sw_portno;
 
             // create socket
             bzero(&saddr, sizeof(saddr));
@@ -94,8 +95,6 @@ void *read_console(void* port)
                 cerr << "Send failed!" << endl;
                 exit(1);
             }
-            upswitch = sw_portno;
-            sw.push_back(sw_portno);
 
         }
         else
@@ -263,7 +262,7 @@ int main(int argc, char *argv[])
                     cl.push_back(caddr.sin_port);
                     ip.push_back(getsrc(buf));
                     bzero(message, 128);
-                    strcpy(message, "You're connected!");
+                    strcpy(message, ":You're connected!");
                     int ns = sendto(sfd, message, strlen(message), 0, (struct sockaddr *)&caddr, len);
                     if (ns == -1)
                     {
@@ -300,10 +299,12 @@ int main(int argc, char *argv[])
             else if (issr(buf))
             {
                 // TODO 
+                    // cout << "issr\n";
                 if (isfirst(buf))
                 {
+                    // cout << "isfirst\n";
                     server = getsrc(buf);
-                    cout << "server connected on: " << server << endl;
+                    cout << "server connected on: " << ntohs(caddr.sin_port) << endl;
 
                 }
                 else

@@ -106,10 +106,12 @@ int route(char* packet, char *port[], int portcount)
 
 bool issw(char* packet)
 {
-    char tmp[2];
+    char tmp[3];
+    bzero(tmp, 3);
     copy(packet, packet+2, tmp);
+    tmp[3] = '\0';
 
-    if (*tmp == 's' && *(tmp+1) == 'w' )
+    if (string(tmp) == "sw" )
     {
         return true;
     }
@@ -118,10 +120,12 @@ bool issw(char* packet)
 
 bool iscl(char* packet)
 {
-    char tmp[2];
+    char tmp[3];
+    bzero(tmp, 3);
     copy(packet, packet+2, tmp);
+    tmp[3] = '\0';
 
-    if (*tmp == 'c' && *(tmp+1) == 'l' )
+    if (string(tmp) == "cl" )
     {
         return true;
     }
@@ -130,10 +134,12 @@ bool iscl(char* packet)
 
 bool issr(char* packet)
 {
-    char tmp[2];
+    char tmp[3];
+    bzero(tmp, 3);
     copy(packet, packet+2, tmp);
+    tmp[3] = '\0';
 
-    if (*tmp == 's' && *(tmp+1) == 'r' )
+    if (string(tmp) == "sr" )
     {
         return true;
     }
@@ -142,10 +148,12 @@ bool issr(char* packet)
 
 bool issp(char* packet)
 {
-    char tmp[2];
+    char tmp[3];
+    bzero(tmp, 3);
     copy(packet, packet+2, tmp);
+    tmp[3] = '\0';
 
-    if (*tmp == 's' && *(tmp+1) == 'p' )
+    if (string(tmp) == "sp" )
     {
         return true;
     }
@@ -154,10 +162,26 @@ bool issp(char* packet)
 
 bool isfirst(char* packet)
 {
-    char tmp[2];
+    char tmp[3];
+    bzero(tmp, 3);
     copy(packet+2, packet+4, tmp);
+    tmp[3] = '\0';
 
-    if (*tmp == 'c' && *(tmp+1) == 't' )
+    if (string(tmp) == "ct" )
+    {
+        return true;
+    }
+    return false;
+}
+
+bool reqlist(char* packet)
+{
+    char tmp[3];
+    bzero(tmp, 3);
+    copy(packet+2, packet+4, tmp);
+    tmp[3] = '\0';
+
+    if (string(tmp) == "gl" )
     {
         return true;
     }
@@ -187,6 +211,20 @@ int getsrc(char* packet)
     bzero(res, 8);
     copy(packet+12, packet+20, res);
     return atoi(res);
+}
+
+int getcmd(char* packet)
+{
+    char res[3];
+    bzero(res, 3);
+    copy(packet+2, packet+4, res);
+    res[3] = '\0';
+    if (string(res) == "rd")
+        return 1;
+    if (string(res) == "ap")
+        return 2;
+    if (string(res) == "wr")
+        return 3;
 }
 
 int ttl(char* packet)
@@ -250,6 +288,17 @@ void chcmd(char* buf, char* cmd)
     strcat(buf, tmp);
 
 }
+
+void chdata(char* buf, char* data)
+{
+    char tmp[28];
+    bzero(tmp,28);
+    copy(buf, buf+27, tmp);
+    bzero(buf, 128);
+    strcpy(buf, tmp);
+    strcat(buf, data);
+}
+
 void decttl(char* buf)
 {
     int ttl;
