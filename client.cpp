@@ -43,6 +43,12 @@ int main(int argc, char *argv[])
     char usr[3];
     bzero(usr,3); 
     bool login = false;
+    char ipstr[8];
+
+    int sw_portno;
+    int sfd, n;
+    socklen_t len;
+    struct sockaddr_in saddr;
 
 while(1)
 {
@@ -54,11 +60,13 @@ while(1)
     char line[128];
     char token[20];
     char pass[20];
-    char service[20];
-    char access[20];
     char data[101];
     char port_str[4];
 
+    char service[6];
+    char access[7];
+    bzero(service, 6);
+    bzero(access, 7);
 
     bzero(buf,128);
     bzero(packet,128);
@@ -67,18 +75,11 @@ while(1)
     bzero(tmp,128);
     bzero(token,20);
     bzero(pass,20);
-    bzero(service,20);
-    bzero(access,20);
     bzero(data,100);
     bzero(port_str,4);
     
     i = 0;
-    int sw_portno;
-    char ipstr[8];
-    int sfd, n;
-    socklen_t len;
-    char sline[MAX], rline[MAX+1];
-    struct sockaddr_in saddr;
+    // char sline[MAX], rline[MAX+1];
 
 
     
@@ -210,8 +211,8 @@ while(1)
 
                 if(string(token) == "Services")
                 {
-                    // TODO
                     encaps("cl", "gl", "00001000", ipstr, "givelistplz", buf);
+                    chdata(buf, usr);
         
                     len=sizeof(saddr);
                     int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
@@ -258,7 +259,37 @@ while(1)
         strcpy(service, command[i++]);
         strcpy(access, command[i++]);
 
+
         // TODO
+        if (string(access) == "read" )
+            encaps("cl", "qr", "00001000", ipstr, service, buf);        
+        else if (string(access) == "write" )
+            encaps("cl", "qw", "00001000", ipstr, service, buf);
+        else if (string(access) == "append" )
+            encaps("cl", "qa", "00001000", ipstr, service, buf);
+
+        len=sizeof(saddr);
+        int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
+        if (ns == -1)
+        {
+            cerr << "Send failed!" << endl;
+            exit(1);
+        }
+
+        bzero(buf,128);
+
+        int nr = recvfrom(sfd, buf, 128, 0, NULL, NULL);
+        if (nr == -1)
+        {
+            cerr << "Receive failed!" << endl;
+            exit(1);
+        } 
+
+        bzero(data, 101);
+        copy(buf+27, buf+128, data);
+        cout << data << endl;
+
+
 
     }    
     else if (string(token) == "Send")

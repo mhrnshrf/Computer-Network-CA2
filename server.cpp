@@ -23,7 +23,18 @@ vector<int> sp;
 vector<int> ip;
 vector<string> name;
 vector<string> service;
-vector<vector<int> > tbl;
+vector<int> tbl[20];
+
+string findname(char* buf)
+{
+    for (int i = 0; i < ip.size(); ++i)
+    {
+        if (ip[i] == getsrc(buf))
+        {
+            return name[i];
+        }
+    }
+}
 
 bool exist(int cl)
 {
@@ -37,16 +48,20 @@ bool exist(int cl)
     return false;
 }
 
-bool allowed(char* cl, char* serv, int cmd)
+bool allowed(string cl, char* serv, int cmd)
 {
     ifstream in;
     string usr, file, perm;
     in.open("/home/me/Desktop/AC.txt");
 
+    // cout << "cl: " << cl << endl;
+    // cout << "serv: " << serv << endl;
+    // cout << "cmd: " << cmd << endl;
+
     while(!in.eof())
     {
         in >> usr >> file >> perm ;
-        if (usr == string(cl))
+        if (usr == cl)
         {
             if (file == string(serv))
             {
@@ -131,7 +146,6 @@ void *read_console(void* port)
                 cerr << "Send failed!" << endl;
                 exit(1);
             }
-            sw.push_back(sw_portno);
 
         }
         else
@@ -217,24 +231,27 @@ int main(int argc, char *argv[])
             
             if (issw(buf))
             {
-                if (!exist(getsrc(buf)))
+                // if (!exist(getsrc(buf)))
+                // {
+                // }
+                if (reqlist(buf))
                 {
                     for (int i = 0; i < sw.size(); ++i)
                     {
-                        // cout << "issw \n";
                         if (sw[i] == ntohs(caddr.sin_port))
                         {
-                            // tbl[i].push_back(getsrc(buf));
+                        cout << "###" << endl;
+                            tbl[i].push_back(getsrc(buf));
+                        cout << i << endl;
                             ip.push_back(getsrc(buf));
-                            char usr[3];
-                            bzero(usr, 3);
+                            char usr[4];
+                            bzero(usr, 4);
                             copy(buf+27, buf+30, usr);
+                            usr[3] = '\0';
                             name.push_back(string(usr));
+                            cout << ip[i] << " name: " << name [i] << endl;
                         }
                     }
-                }
-                if (reqlist(buf))
-                {
                     // cout << "here!!!!!!!!!!!!!!\n"; 
                     char tmp[6];
                     bzero(data, 100);
@@ -248,7 +265,54 @@ int main(int argc, char *argv[])
                     }
                     chdata(buf, data);
                 }
+                else if (reqacc(buf))
+                {
+                    // char cl[4];
+                    // bzero(cl, 4);
+                    for (int i = 0; i < 20; ++i)
+                    {
+                        cout << "from switch " << sw[i] << ":\n";
+                        for (int j = 0; j < tbl[i].size(); ++j)
+                          {
+                              cout << "client: " << tbl[i][j] << endl;
+                          }  
+                    }
+                    string cl = findname(buf);
+                    char serv[6];
+                    bzero(serv, 6);
+                    copy(buf+27, buf+32, serv);
+                    serv[5] = '\0';
+                    int cmd = 0;
+                    bzero(data, 100);
 
+                    if (reqrd(buf))
+                    {
+                        cmd = 1;
+                        strcpy(data, ":Reading ");
+                    }
+                    else if (reqap(buf))
+                    {
+                        cmd = 2;
+                        strcpy(data, ":Appending ");
+                    }
+                    else if (reqwr(buf))
+                    {
+                        cmd = 3;
+                        strcpy(data, ":Writing ");
+                    }
+                    strcat(data, serv);
+                    strcat(data, " ");
+                    if (allowed(cl, serv, cmd))
+                    {
+                        strcat(data, "is ");
+                    }
+                    else
+                    {
+                        strcat(data, "isn't ");
+                    }
+                    strcat(data, "available for you!");
+                    chdata(buf, data);
+                }
                 char dst[8];
                 char src[8];
                 char rep[2];
@@ -282,7 +346,7 @@ int main(int argc, char *argv[])
                     char serv[6];
                     bzero(serv, 6);
                     copy(buf+27, buf+32, serv);
-                    serv[6] = '\0';
+                    serv[5] = '\0';
                     sp.push_back(caddr.sin_port);
                     service.push_back(string(serv));
 
@@ -295,8 +359,6 @@ int main(int argc, char *argv[])
                         exit(1);
                     }
                 }
-
-
             }            
 
 

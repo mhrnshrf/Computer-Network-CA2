@@ -109,7 +109,7 @@ bool issw(char* packet)
     char tmp[3];
     bzero(tmp, 3);
     copy(packet, packet+2, tmp);
-    tmp[3] = '\0';
+    tmp[2] = '\0';
 
     if (string(tmp) == "sw" )
     {
@@ -123,7 +123,7 @@ bool iscl(char* packet)
     char tmp[3];
     bzero(tmp, 3);
     copy(packet, packet+2, tmp);
-    tmp[3] = '\0';
+    tmp[2] = '\0';
 
     if (string(tmp) == "cl" )
     {
@@ -137,7 +137,7 @@ bool issr(char* packet)
     char tmp[3];
     bzero(tmp, 3);
     copy(packet, packet+2, tmp);
-    tmp[3] = '\0';
+    tmp[2] = '\0';
 
     if (string(tmp) == "sr" )
     {
@@ -151,7 +151,7 @@ bool issp(char* packet)
     char tmp[3];
     bzero(tmp, 3);
     copy(packet, packet+2, tmp);
-    tmp[3] = '\0';
+    tmp[2] = '\0';
 
     if (string(tmp) == "sp" )
     {
@@ -165,7 +165,7 @@ bool isfirst(char* packet)
     char tmp[3];
     bzero(tmp, 3);
     copy(packet+2, packet+4, tmp);
-    tmp[3] = '\0';
+    tmp[2] = '\0';
 
     if (string(tmp) == "ct" )
     {
@@ -179,9 +179,65 @@ bool reqlist(char* packet)
     char tmp[3];
     bzero(tmp, 3);
     copy(packet+2, packet+4, tmp);
-    tmp[3] = '\0';
+    tmp[2] = '\0';
 
     if (string(tmp) == "gl" )
+    {
+        return true;
+    }
+    return false;
+}
+
+bool reqrd(char* packet)
+{
+    char tmp[3];
+    bzero(tmp, 3);
+    copy(packet+2, packet+4, tmp);
+    tmp[2] = '\0';
+
+    if (string(tmp) == "qr" )
+    {
+        return true;
+    }
+    return false;
+}
+
+bool reqwr(char* packet)
+{
+    char tmp[3];
+    bzero(tmp, 3);
+    copy(packet+2, packet+4, tmp);
+    tmp[2] = '\0';
+
+    if (string(tmp) == "qw" )
+    {
+        return true;
+    }
+    return false;
+}
+
+bool reqap(char* packet)
+{
+    char tmp[3];
+    bzero(tmp, 3);
+    copy(packet+2, packet+4, tmp);
+    tmp[2] = '\0';
+
+    if (string(tmp) == "qa" )
+    {
+        return true;
+    }
+    return false;
+}
+
+bool reqacc(char* packet)
+{
+    char tmp[2];
+    bzero(tmp, 2);
+    copy(packet+2, packet+3, tmp);
+    tmp[1] = '\0';
+
+    if (string(tmp) == "q" )
     {
         return true;
     }
