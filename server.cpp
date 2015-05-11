@@ -21,6 +21,7 @@ using namespace std;
 vector<int> sw;
 vector<int> sp;
 vector<int> ip;
+vector<int> corres;
 vector<string> name;
 vector<string> service;
 vector<int> tbl[20];
@@ -32,6 +33,28 @@ string findname(char* buf)
         if (ip[i] == getsrc(buf))
         {
             return name[i];
+        }
+    }
+}
+
+int findsp(string serv)
+{
+    for (int i = 0; i < service.size(); ++i)
+    {
+        if (serv == service[i])
+        {
+            return sp[i];
+        }
+    }
+}
+
+int findsw(int cl)
+{
+    for (int i = 0; i < ip.size(); ++i)
+    {
+        if (cl == ip[i])
+        {
+            return corres[i];
         }
     }
 }
@@ -53,10 +76,6 @@ bool allowed(string cl, char* serv, int cmd)
     ifstream in;
     string usr, file, perm;
     in.open("/home/me/Desktop/AC.txt");
-
-    // cout << "cl: " << cl << endl;
-    // cout << "serv: " << serv << endl;
-    // cout << "cmd: " << cmd << endl;
 
     while(!in.eof())
     {
@@ -228,6 +247,7 @@ int main(int argc, char *argv[])
         {
             cout << "Received packet from " << inet_ntoa(caddr.sin_addr)<<  ":" << ntohs(caddr.sin_port) << endl;
             cout << buf << endl;
+            int swport = caddr.sin_port;
             
             if (issw(buf))
             {
@@ -236,22 +256,23 @@ int main(int argc, char *argv[])
                 // }
                 if (reqlist(buf))
                 {
-                    for (int i = 0; i < sw.size(); ++i)
-                    {
-                        if (sw[i] == ntohs(caddr.sin_port))
-                        {
-                        cout << "###" << endl;
-                            tbl[i].push_back(getsrc(buf));
-                        cout << i << endl;
+                    // for (int i = 0; i < sw.size(); ++i)
+                    // {
+                    //     if (sw[i] == ntohs(caddr.sin_port))
+                    //     {
+                        // cout << "###" << endl;
+                        //     tbl[i].push_back(getsrc(buf));
+                        // cout << i << endl;
                             ip.push_back(getsrc(buf));
+                            corres.push_back(ntohs(caddr.sin_port));
                             char usr[4];
                             bzero(usr, 4);
                             copy(buf+27, buf+30, usr);
                             usr[3] = '\0';
                             name.push_back(string(usr));
-                            cout << ip[i] << " name: " << name [i] << endl;
-                        }
-                    }
+                            // cout << ip[i] << " name: " << name [i] << endl;
+                    //     }
+                    // }
                     // cout << "here!!!!!!!!!!!!!!\n"; 
                     char tmp[6];
                     bzero(data, 100);
@@ -269,14 +290,14 @@ int main(int argc, char *argv[])
                 {
                     // char cl[4];
                     // bzero(cl, 4);
-                    for (int i = 0; i < 20; ++i)
-                    {
-                        cout << "from switch " << sw[i] << ":\n";
-                        for (int j = 0; j < tbl[i].size(); ++j)
-                          {
-                              cout << "client: " << tbl[i][j] << endl;
-                          }  
-                    }
+                    // for (int i = 0; i < 20; ++i)
+                    // {
+                    //     cout << "from switch " << sw[i] << ":\n";
+                    //     for (int j = 0; j < tbl[i].size(); ++j)
+                    //       {
+                    //           cout << "client: " << tbl[i][j] << endl;
+                    //       }  
+                    // }
                     string cl = findname(buf);
                     char serv[6];
                     bzero(serv, 6);
@@ -289,6 +310,7 @@ int main(int argc, char *argv[])
                     {
                         cmd = 1;
                         strcpy(data, ":Reading ");
+
                     }
                     else if (reqap(buf))
                     {
@@ -305,10 +327,20 @@ int main(int argc, char *argv[])
                     if (allowed(cl, serv, cmd))
                     {
                         strcat(data, "is ");
+                        buf[26] = '1';
+                        caddr.sin_port = findsp(string(serv));
+                        int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&caddr, len);
+                        if (ns == -1)
+                        {
+                            cerr << "Send failed!" << endl;
+                            exit(1);
+                        }
+
                     }
                     else
                     {
                         strcat(data, "isn't ");
+                        buf[26] = '0';
                     }
                     strcat(data, "available for you!");
                     chdata(buf, data);
@@ -323,11 +355,13 @@ int main(int argc, char *argv[])
                 strcpy(src, "00001000");
                 itoa(getsrc(buf), dst);
                 padding(dst, 8);
-                // strcat(buf,"SERVER");
+
                 chsrc(buf, src);
                 chdst(buf, dst);
                 chcmd(buf, rep);
                 chtype(buf, srtype);
+
+                caddr.sin_port = swport;
 
                 int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&caddr, len);
                 if (ns == -1)
@@ -358,6 +392,37 @@ int main(int argc, char *argv[])
                         cerr << "Send failed!" << endl;
                         exit(1);
                     }
+                }
+                else
+                {
+                    char dst[8];
+                    char src[8];
+                    char rep[2];
+                    bzero(rep, 2);
+                    bzero(dst, 8);
+                    bzero(src, 8);
+                    strcpy(rep, "rp");
+                    strcpy(src, "00001000");
+                    itoa(getsrc(buf), dst);
+                    padding(dst, 8);
+
+                    chsrc(buf, src);
+                    chdst(buf, dst);
+                    chcmd(buf, rep);
+                    chtype(buf, srtype);
+
+                    caddr.sin_family = AF_INET;
+                    inet_pton(AF_INET, "localhost", &caddr.sin_addr);
+                    caddr.sin_port = htons(findsw(getdst(buf)));
+
+                    int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&caddr, len);
+                    if (ns == -1)
+                    {
+                        cerr << "Send failed!" << endl;
+                        exit(1);
+                    }
+
+
                 }
             }            
 

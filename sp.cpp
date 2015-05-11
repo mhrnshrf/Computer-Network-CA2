@@ -21,17 +21,17 @@ int main(int argc, char *argv[])
 
     int i,x;
     char serv[5];
+    char sp[] = "sp";
     bzero(serv, 5);
     strcpy(serv, argv[1]);
 
-while(1)
-{
+
 
     char *command[20];
     char buf[128];
     char packet[128];
-    char tmp[128];
     char line[128];
+    char tmp[128];
     char token[20];
     char usr[3];
     char pass[20];
@@ -43,8 +43,8 @@ while(1)
 
     bzero(buf,128);
     bzero(packet,128);
-    bzero(command,20);
     bzero(line,128);
+    bzero(command,20);
     bzero(tmp,128);
     bzero(token,20);
     bzero(usr,3);    
@@ -113,6 +113,53 @@ while(1)
 
             cout << buf << endl;
 
+            while(1)
+            {
+
+                bzero(buf,128);
+                
+                int nr = recvfrom(sfd, buf, 128, 0, NULL, NULL);
+                if (nr == -1)
+                {
+                    cerr << "Receive failed!" << endl;
+                    exit(1);
+                }
+
+                if (reqacc(buf))
+                {
+                    ifstream in;
+                    char addr[50];
+                    bzero(addr, 50);
+                    strcpy(addr, "/home/me/Desktop/");
+                    strcat(addr, argv[1]);
+                    in.open(addr);
+                    char data[101];
+                    bzero(data, 101);
+                    string ln;
+
+                    while(!in.eof())
+                    {
+                        getline(in, ln);
+                        strcat(data, ln.c_str());
+                        strcat(data, "\n");
+                    }
+
+                    chtype(buf, sp);
+                    chdata(buf, data);
+
+                    len=sizeof(saddr);
+                    int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
+                    if (ns == -1)
+                    {
+                        cerr << "Send failed!" << endl;
+                        exit(1);
+                    } 
+                } 
+
+            }
+
+            
+
 
 
         }
@@ -130,7 +177,7 @@ while(1)
     }
 
 
-}
+
 
     
     

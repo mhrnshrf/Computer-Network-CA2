@@ -289,6 +289,26 @@ while(1)
         copy(buf+27, buf+128, data);
         cout << data << endl;
 
+        if (buf[26] == '1')
+        {
+            bzero(buf,128);
+
+            int nr = recvfrom(sfd, buf, 128, 0, NULL, NULL);
+            if (nr == -1)
+            {
+                cerr << "Receive failed!" << endl;
+                exit(1);
+            }
+
+            bzero(data, 101);
+            copy(buf+27, buf+128, data);
+            cout << data << endl;
+             
+        }
+        // else if (buf[26] == '0')
+        // {
+        //     /* code */
+        // }
 
 
     }    
