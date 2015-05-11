@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
             bzero(buf, 128);
             encaps("sp", "ct", "00001000", ipstr, serv, buf);
 
-            cout << "Im sending: " << buf << endl;
+            // cout << "Im sending: " << buf << endl;
 
             len=sizeof(saddr);
             int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
@@ -136,14 +136,15 @@ int main(int argc, char *argv[])
                     char data[101];
                     bzero(data, 101);
                     string ln;
-
+                    strcpy(data, ":File's content:");
                     while(!in.eof())
                     {
                         getline(in, ln);
-                        strcat(data, ln.c_str());
                         strcat(data, "\n");
+                        strcat(data, ln.c_str());
                     }
 
+                    in.close();
                     chtype(buf, sp);
                     chdata(buf, data);
 
@@ -155,6 +156,20 @@ int main(int argc, char *argv[])
                         exit(1);
                     } 
                 } 
+                else if(isap(buf))
+                {
+                    ofstream out;
+                    char addr[50];
+                    bzero(addr, 50);
+                    strcpy(addr, "/home/me/Desktop/");
+                    strcat(addr, argv[1]);
+                    out.open(addr, fstream::app);
+                    char data[96];
+                    bzero(data, 96);
+                    copy(buf+32, buf+128, data);
+                    out << data << endl;
+                    out.close();
+                }
 
             }
 

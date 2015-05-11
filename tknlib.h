@@ -23,6 +23,7 @@ extern bool issw(char* packet);
 extern bool iscl(char* packet);
 extern bool issr(char* packet);
 extern bool issp(char* packet);
+extern bool isap(char* packet);
 extern bool isfirst(char* packet);
 extern bool reqlist(char* packet);
 extern bool reqrd(char* packet);

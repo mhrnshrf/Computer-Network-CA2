@@ -174,8 +174,7 @@ int main(int argc, char *argv[])
         if (nr != -1)
         {
             cout << "Received packet from " << inet_ntoa(caddr.sin_addr)<<  ":" << ntohs(caddr.sin_port) << endl;
-            cout << buf << endl;
-            // cout << "is 1st? " << isfirst(buf) << endl;
+            // cout << buf << endl;
             
             if (issw(buf))
             {

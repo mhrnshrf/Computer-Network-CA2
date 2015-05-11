@@ -244,6 +244,20 @@ bool reqacc(char* packet)
     return false;
 }
 
+bool isap(char* packet)
+{
+    char tmp[3];
+    bzero(tmp, 3);
+    copy(packet+2, packet+4, tmp);
+    tmp[2] = '\0';
+
+    if (string(tmp) == "ap" )
+    {
+        return true;
+    }
+    return false;
+}
+
 int getip(char* packet)
 {
     char res[4];

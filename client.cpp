@@ -75,7 +75,7 @@ while(1)
     bzero(tmp,128);
     bzero(token,20);
     bzero(pass,20);
-    bzero(data,100);
+    bzero(data,101);
     bzero(port_str,4);
     
     i = 0;
@@ -135,33 +135,9 @@ while(1)
                 char src[] = "2323";
                 padding(src, 8);
                 padding(dest, 8);
-                // cout << "user: " << usr << endl;
-                // cout << "isfirst? " << isfirst(buf) << endl; 
-                // cout << "reqlist? " << reqlist(buf) << endl; 
-                // cout << "iscl? " << iscl(buf) << endl; 
-                // itoa(saddr.sin_port, dest);
-                // cout << "src " << strlen(src) << endl;
 
-                // cout << "ip: " << src << endl;
-                // cout << "Buffer is : " << buf << endl;
-                // chtype(buf, sr);
-                // cout << "Buffer is : " << buf << endl;
-                // chdst(buf, src);
-                // cout << "Buffer is : " << buf << endl;
-                // chsrc(buf, dest);
-                // cout << "Buffer is : " << buf << endl;
-                // chdata(buf, usr);
-                // cout << "Buffer is : " << buf << endl;
 
-                // // cout << "1st?  " << isfirst(buf) << endl;
-                // chcmd(buf, sr);
-                // cout << "src: " << getdst(buf) << endl;
-                // if (issr(buf))
-                //     cout << "sr\n";
-                // if (isfirst(buf))
-                //     cout << "1st\n";
-
-                cout << "Im sending: " << buf << endl;
+                // cout << "Im sending: " << buf << endl;
 
                 len=sizeof(saddr);
                 int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
@@ -303,25 +279,45 @@ while(1)
             bzero(data, 101);
             copy(buf+27, buf+128, data);
             cout << data << endl;
-             
+
         }
-        // else if (buf[26] == '0')
-        // {
-        //     /* code */
-        // }
 
 
     }    
     else if (string(token) == "Send")
     {
-        strcpy(service, command[i++]);
         // TODO
+        strcpy(service, command[i++]);
+
     }
     else if (string(token) == "Append")
     {
         strcpy(service, command[i++]);
-        strcpy(data, command[i++]);
+        strcpy(data, service);
+        strcat(data, command[i++]);
         // TODO
+        encaps("cl", "ap", "00001000", ipstr, data, buf);
+
+        len=sizeof(saddr);
+        int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&saddr, len);
+        if (ns == -1)
+        {
+            cerr << "Send failed!" << endl;
+            exit(1);
+        }
+
+        bzero(buf,128);
+
+        int nr = recvfrom(sfd, buf, 128, 0, NULL, NULL);
+        if (nr == -1)
+        {
+            cerr << "Receive failed!" << endl;
+            exit(1);
+        }
+        
+        bzero(data, 101);
+        copy(buf+27, buf+128, data);
+        cout << data << endl;
     }
     else if (string(token) == "Logout")
     {

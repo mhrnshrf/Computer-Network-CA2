@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
         if (nr != -1)
         {
             cout << "Received packet from " << inet_ntoa(caddr.sin_addr)<<  ":" << ntohs(caddr.sin_port) << endl;
-            cout << buf << endl;
+            // cout << buf << endl;
             int swport = caddr.sin_port;
             
             if (issw(buf))
@@ -256,24 +256,14 @@ int main(int argc, char *argv[])
                 // }
                 if (reqlist(buf))
                 {
-                    // for (int i = 0; i < sw.size(); ++i)
-                    // {
-                    //     if (sw[i] == ntohs(caddr.sin_port))
-                    //     {
-                        // cout << "###" << endl;
-                        //     tbl[i].push_back(getsrc(buf));
-                        // cout << i << endl;
-                            ip.push_back(getsrc(buf));
-                            corres.push_back(ntohs(caddr.sin_port));
-                            char usr[4];
-                            bzero(usr, 4);
-                            copy(buf+27, buf+30, usr);
-                            usr[3] = '\0';
-                            name.push_back(string(usr));
-                            // cout << ip[i] << " name: " << name [i] << endl;
-                    //     }
-                    // }
-                    // cout << "here!!!!!!!!!!!!!!\n"; 
+                    ip.push_back(getsrc(buf));
+                    corres.push_back(ntohs(caddr.sin_port));
+                    char usr[4];
+                    bzero(usr, 4);
+                    copy(buf+27, buf+30, usr);
+                    usr[3] = '\0';
+                    name.push_back(string(usr));
+
                     char tmp[6];
                     bzero(data, 100);
                     bzero(tmp, 6);
@@ -288,16 +278,6 @@ int main(int argc, char *argv[])
                 }
                 else if (reqacc(buf))
                 {
-                    // char cl[4];
-                    // bzero(cl, 4);
-                    // for (int i = 0; i < 20; ++i)
-                    // {
-                    //     cout << "from switch " << sw[i] << ":\n";
-                    //     for (int j = 0; j < tbl[i].size(); ++j)
-                    //       {
-                    //           cout << "client: " << tbl[i][j] << endl;
-                    //       }  
-                    // }
                     string cl = findname(buf);
                     char serv[6];
                     bzero(serv, 6);
@@ -345,6 +325,36 @@ int main(int argc, char *argv[])
                     strcat(data, "available for you!");
                     chdata(buf, data);
                 }
+                else if (isap(buf))
+                {
+                    string cl = findname(buf);
+                    char serv[6];
+                    bzero(serv, 6);
+                    copy(buf+27, buf+32, serv);
+                    serv[5] = '\0';
+                    bzero(data, 100);
+
+                    if (allowed(cl, serv, 2))
+                    {
+                        strcpy(data, ":Your data will be appended!");
+
+                        caddr.sin_port = findsp(string(serv));
+                        int ns = sendto(sfd, buf, strlen(buf), 0, (struct sockaddr *)&caddr, len);
+                        if (ns == -1)
+                        {
+                            cerr << "Send failed!" << endl;
+                            exit(1);
+                        }
+                    }
+                    else
+                    {
+                        strcpy(data, ":Appending this file isn't available for you!");
+                    }
+                    chdata(buf, data);
+                    
+                }
+
+                
                 char dst[8];
                 char src[8];
                 char rep[2];

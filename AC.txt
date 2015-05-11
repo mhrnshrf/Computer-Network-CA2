@@ -1,0 +1,12 @@
+aaa 1.txt Read
+bbb 1.txt Read
+ccc 1.txt Write
+ddd 1.txt Write
+aaa 2.txt Append
+bbb 2.txt Append
+ccc 2.txt Write
+ddd 2.txt Write
+aaa 3.txt Read
+bbb 3.txt Read
+ccc 3.txt Read
+ddd 3.txt Read
